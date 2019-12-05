@@ -6,6 +6,7 @@ library(caret)
 library(glmnet)
 library(data.table)
 library(doSNOW)
+library(ROCR)
 
 Spinale <- read_excel("SpinaleDataSet.xlsx")
 
@@ -22,15 +23,11 @@ ggplot(S, aes(x = response, y = lvesv_delta)) +
 
 
 
-SpinaleProteinsAndResponses <- S %>% 
-  select(mmp2, mmp9, st2, crp, bnp, timp1, timp2, tim4, spg130, sil2ra, tnfrii, ifng, response)
 
-
-
-SpinaleProteinsAndResponses <- SpinaleProteinsAndResponses %>%
+S <- S %>%
   filter(mmp2 > 0)
 
-colSums(is.na(SpinaleProteinsAndResponses))
+colSums(is.na(S))
 
 
 #standardizing MMP2 and checking its distribution/relationship with 
@@ -38,37 +35,37 @@ colSums(is.na(SpinaleProteinsAndResponses))
 
 
 
-boxplot(SpinaleProteinsAndResponses$mmp2)
+boxplot(S$mmp2)
 
 
-n <- length(SpinaleProteinsAndResponses$mmp2)
-sort(SpinaleProteinsAndResponses$mmp2,partial=n)[n]
-which(SpinaleProteinsAndResponses$mmp2 == 4881676)
+n <- length(S$mmp2)
+sort(S$mmp2,partial=n)[n]
+which(S$mmp2 == 4881676)
 
-sort(SpinaleProteinsAndResponses$mmp2,partial=n-1)[n-1]
-which(SpinaleProteinsAndResponses$mmp2 > 3336170)
+sort(S$mmp2,partial=n-1)[n-1]
+which(S$mmp2 > 3336170)
 
-sort(SpinaleProteinsAndResponses$mmp2,partial=n-2)[n-2]
-which(SpinaleProteinsAndResponses$mmp2 >= 2448172)
+sort(S$mmp2,partial=n-2)[n-2]
+which(S$mmp2 >= 2448172)
 
-SpinaleProteinsAndResponses$mmp2[c(38, 181)] <- 2448172
-
-
-meanMMP2 <- mean(SpinaleProteinsAndResponses$mmp2)
-sdMMP2 <- sd(SpinaleProteinsAndResponses$mmp2)
+S$mmp2[c(38, 181)] <- 2448172
 
 
+meanMMP2 <- mean(S$mmp2)
+sdMMP2 <- sd(S$mmp2)
 
-SpinaleProteinsAndResponses <- SpinaleProteinsAndResponses %>% 
+
+
+S <- S %>% 
     mutate(MMP2_standardized = (mmp2 - meanMMP2)/sdMMP2)
 
-ggplot(SpinaleProteinsAndResponses, aes(x = MMP2_standardized)) +
+ggplot(S, aes(x = S)) +
   geom_histogram()
 
-ggplot(SpinaleProteinsAndResponses, aes(x = response, y = MMP2_standardized)) +
+ggplot(S, aes(x = response, y = MMP2_standardized)) +
   geom_point() 
 
-boxplot(SpinaleProteinsAndResponses$MMP2_standardized)
+boxplot(S$MMP2_standardized)
 
 
 
@@ -77,56 +74,56 @@ boxplot(SpinaleProteinsAndResponses$MMP2_standardized)
 #standardizing MMP9 and checking its distribution/relationship with 
 #target variable
 
-boxplot(SpinaleProteinsAndResponses$mmp9)
-sort(SpinaleProteinsAndResponses$mmp9,partial=n)[n]
-which(SpinaleProteinsAndResponses$mmp9 == 1979866)
+boxplot(S$mmp9)
+sort(S$mmp9,partial=n)[n]
+which(S$mmp9 == 1979866)
 
-sort(SpinaleProteinsAndResponses$mmp9,partial=n - 1)[n - 1]
+sort(S$mmp9,partial=n - 1)[n - 1]
 
-SpinaleProteinsAndResponses$mmp9[181] <- 990026
-
-
-
-meanMMP9 <- mean(SpinaleProteinsAndResponses$mmp9)
-sdMMP9 <- sd(SpinaleProteinsAndResponses$mmp9)
+S$mmp9[181] <- 990026
 
 
 
-SpinaleProteinsAndResponses <- SpinaleProteinsAndResponses %>% 
+meanMMP9 <- mean(S$mmp9)
+sdMMP9 <- sd(S$mmp9)
+
+
+
+S <- S %>% 
   mutate(MMP9_standardized = (mmp9 - meanMMP9)/sdMMP9)
 
-ggplot(SpinaleProteinsAndResponses, aes(x = MMP9_standardized)) +
+ggplot(S, aes(x = MMP9_standardized)) +
   geom_histogram()
 
-ggplot(SpinaleProteinsAndResponses, aes(x = mmp9)) +
+ggplot(S, aes(x = mmp9)) +
   geom_()
 
-ggplot(SpinaleProteinsAndResponses, aes(x = response, y = mmp9)) +
+ggplot(S, aes(x = response, y = mmp9)) +
   geom_boxplot() 
 
-boxplot(SpinaleProteinsAndResponses$MMP9_standardized)
+boxplot(S$MMP9_standardized)
 
 
 #standardizing ST2 and checking its distribution/relationship with 
 #target variable
 
-boxplot(SpinaleProteinsAndResponses$st2)
+boxplot(S$st2)
 
 
 
 
-meanST2 <- mean(SpinaleProteinsAndResponses$st2)
-sdST2 <- sd(SpinaleProteinsAndResponses$st2)
+meanST2 <- mean(S$st2)
+sdST2 <- sd(S$st2)
 
 
 
-SpinaleProteinsAndResponses <- SpinaleProteinsAndResponses %>% 
+S <- S %>% 
   mutate(ST2_standardized = (st2 - meanST2)/sdST2)
 
-ggplot(SpinaleProteinsAndResponses, aes(x = ST2_standardized)) +
+ggplot(S, aes(x = ST2_standardized)) +
   geom_histogram()
 
-ggplot(SpinaleProteinsAndResponses, aes(x = response, y = ST2_standardized)) +
+ggplot(S, aes(x = response, y = ST2_standardized)) +
   geom_point() 
 
 
@@ -134,22 +131,22 @@ ggplot(SpinaleProteinsAndResponses, aes(x = response, y = ST2_standardized)) +
 #standardizing CRP and checking its distribution/relationship with 
 #target variable
 
-boxplot(SpinaleProteinsAndResponses$crp)
+boxplot(S$crp)
 
 
 
-meanCRP <- mean(SpinaleProteinsAndResponses$crp)
-sdCRP <- sd(SpinaleProteinsAndResponses$crp)
+meanCRP <- mean(S$crp)
+sdCRP <- sd(S$crp)
 
 
 
-SpinaleProteinsAndResponses <- SpinaleProteinsAndResponses %>% 
+S <- S %>% 
   mutate(CRP_standardized = (crp - meanCRP)/sdCRP)
 
-ggplot(SpinaleProteinsAndResponses, aes(x = CRP_standardized)) +
+ggplot(S, aes(x = CRP_standardized)) +
   geom_histogram()
 
-ggplot(SpinaleProteinsAndResponses, aes(x = response, y = CRP_standardized)) +
+ggplot(S, aes(x = response, y = CRP_standardized)) +
   geom_point() 
 
 
@@ -157,22 +154,22 @@ ggplot(SpinaleProteinsAndResponses, aes(x = response, y = CRP_standardized)) +
 #standardizing bnp and checking its distribution/relationship with 
 #target variable
 
-boxplot(SpinaleProteinsAndResponses$bnp)
+boxplot(S$bnp)
 
 
 
-meanBNP <- mean(SpinaleProteinsAndResponses$bnp)
-sdBNP <- sd(SpinaleProteinsAndResponses$bnp)
+meanBNP <- mean(S$bnp)
+sdBNP <- sd(S$bnp)
 
 
 
-SpinaleProteinsAndResponses <- SpinaleProteinsAndResponses %>% 
+S <- S %>% 
   mutate(BNP_standardized = (bnp - meanBNP)/sdBNP)
 
-ggplot(SpinaleProteinsAndResponses, aes(x = BNP_standardized)) +
+ggplot(S, aes(x = BNP_standardized)) +
   geom_histogram()
 
-ggplot(SpinaleProteinsAndResponses, aes(x = response, y = BNP_standardized)) +
+ggplot(S, aes(x = response, y = BNP_standardized)) +
   geom_point() 
 
 
@@ -181,455 +178,241 @@ ggplot(SpinaleProteinsAndResponses, aes(x = response, y = BNP_standardized)) +
 #target variable
 
 
-boxplot(SpinaleProteinsAndResponses$timp1)
-sort(SpinaleProteinsAndResponses$timp1,partial=n)[n]
-which(SpinaleProteinsAndResponses$timp1 > 527820)
+boxplot(S$timp1)
+sort(S$timp1,partial=n)[n]
+which(S$timp1 > 527820)
 
-sort(SpinaleProteinsAndResponses$timp1,partial=n - 1)[n - 1]
+sort(S$timp1,partial=n - 1)[n - 1]
 
-SpinaleProteinsAndResponses$timp1[711] <- 406871
-
-
-
-meanTIMP1 <- mean(SpinaleProteinsAndResponses$timp1)
-sdTIMP1 <- sd(SpinaleProteinsAndResponses$timp1)
+S$timp1[711] <- 406871
 
 
 
-SpinaleProteinsAndResponses <- SpinaleProteinsAndResponses %>% 
+meanTIMP1 <- mean(S$timp1)
+sdTIMP1 <- sd(S$timp1)
+
+
+
+S <- S %>% 
   mutate(TIMP1_standardized = (timp1 - meanTIMP1)/sdTIMP1)
 
-ggplot(SpinaleProteinsAndResponses, aes(x = TIMP1_standardized)) +
+ggplot(S, aes(x = TIMP1_standardized)) +
   geom_histogram()
 
-ggplot(SpinaleProteinsAndResponses, aes(x = response, y = TIMP1_standardized)) +
+ggplot(S, aes(x = response, y = TIMP1_standardized)) +
   geom_point() 
 
-boxplot(SpinaleProteinsAndResponses$TIMP1_standardized)
+boxplot(S$TIMP1_standardized)
 
 
 #standardizing timp2 and checking its distribution/relationship with 
 #target variable
 
-boxplot(SpinaleProteinsAndResponses$timp2)
-sort(SpinaleProteinsAndResponses$timp2,partial=n)[n]
-sort(SpinaleProteinsAndResponses$timp2,partial=n-1)[n-1]
-sort(SpinaleProteinsAndResponses$timp2,partial=n-2)[n-2]
-sort(SpinaleProteinsAndResponses$timp2,partial=n-3)[n-3]
+boxplot(S$timp2)
+sort(S$timp2,partial=n)[n]
+sort(S$timp2,partial=n-1)[n-1]
+sort(S$timp2,partial=n-2)[n-2]
+sort(S$timp2,partial=n-3)[n-3]
 
-which(SpinaleProteinsAndResponses$timp2 > 238780)
+which(S$timp2 > 238780)
 
-SpinaleProteinsAndResponses$timp2[c(12,21,29)] <- 202051
-
-
-
-
-meanTIMP2 <- mean(SpinaleProteinsAndResponses$timp2)
-sdTIMP2 <- sd(SpinaleProteinsAndResponses$timp2)
+S$timp2[c(12,21,29)] <- 202051
 
 
 
-SpinaleProteinsAndResponses <- SpinaleProteinsAndResponses %>% 
+
+meanTIMP2 <- mean(S$timp2)
+sdTIMP2 <- sd(S$timp2)
+
+
+
+S <- S %>% 
   mutate(TIMP2_standardized = (timp2 - meanTIMP2)/sdTIMP2)
 
-ggplot(SpinaleProteinsAndResponses, aes(x = TIMP2_standardized)) +
+ggplot(S, aes(x = TIMP2_standardized)) +
   geom_histogram()
 
-ggplot(SpinaleProteinsAndResponses, aes(x = response, y = TIMP2_standardized)) +
+ggplot(S, aes(x = response, y = TIMP2_standardized)) +
   geom_point() 
 
-boxplot(SpinaleProteinsAndResponses$TIMP2_standardized)
+boxplot(S$TIMP2_standardized)
 
 
 #standardizing tim4 and checking its distribution/relationship with 
 #target variable
 
-boxplot(SpinaleProteinsAndResponses$tim4)
+boxplot(S$tim4)
 
-sort(SpinaleProteinsAndResponses$tim4,partial=n)[n]
-sort(SpinaleProteinsAndResponses$tim4,partial=n-1)[n-1]
-sort(SpinaleProteinsAndResponses$tim4,partial=n-2)[n-2]
-
-
-
-which(SpinaleProteinsAndResponses$tim4 > 10390)
-
-SpinaleProteinsAndResponses$tim4[c(24, 545)] <- 9008
-
-
-meanTIM4 <- mean(SpinaleProteinsAndResponses$tim4)
-sdTIMP4 <- sd(SpinaleProteinsAndResponses$tim4)
+sort(S$tim4,partial=n)[n]
+sort(S$tim4,partial=n-1)[n-1]
+sort(S$tim4,partial=n-2)[n-2]
 
 
 
-SpinaleProteinsAndResponses <- SpinaleProteinsAndResponses %>% 
+which(S$tim4 > 10390)
+
+S$tim4[c(24, 545)] <- 9008
+
+
+meanTIM4 <- mean(S$tim4)
+sdTIMP4 <- sd(S$tim4)
+
+
+
+S <- S %>% 
   mutate(TIM4_standardized = (tim4 - meanTIM4)/sdTIMP4)
 
-ggplot(SpinaleProteinsAndResponses, aes(x = TIM4_standardized)) +
+ggplot(S, aes(x = TIM4_standardized)) +
   geom_histogram()
 
-ggplot(SpinaleProteinsAndResponses, aes(x = response, y = TIM4_standardized)) +
+ggplot(S, aes(x = response, y = TIM4_standardized)) +
   geom_point() 
 
-boxplot(SpinaleProteinsAndResponses$TIM4_standardized)
+boxplot(S$TIM4_standardized)
 
 
 #standardizing spg130 and checking its distribution/relationship with 
 #target variable
 
-boxplot(SpinaleProteinsAndResponses$spg130)
-sort(SpinaleProteinsAndResponses$spg130,partial=n)[n]
-sort(SpinaleProteinsAndResponses$spg130,partial=n-1)[n-1]
-sort(SpinaleProteinsAndResponses$spg130,partial=n-2)[n-2]
-sort(SpinaleProteinsAndResponses$spg130,partial=n-3)[n-3]
+boxplot(S$spg130)
+sort(S$spg130,partial=n)[n]
+sort(S$spg130,partial=n-1)[n-1]
+sort(S$spg130,partial=n-2)[n-2]
+sort(S$spg130,partial=n-3)[n-3]
 
-which(SpinaleProteinsAndResponses$spg130 > 436570)
+which(S$spg130 > 436570)
 
-SpinaleProteinsAndResponses$spg130[c(24, 545)] <- 389689.6
-
-
-meanSPG130 <- mean(SpinaleProteinsAndResponses$spg130)
-sdSPG130 <- sd(SpinaleProteinsAndResponses$spg130)
+S$spg130[c(24, 545)] <- 389689.6
 
 
+meanSPG130 <- mean(S$spg130)
+sdSPG130 <- sd(S$spg130)
 
-SpinaleProteinsAndResponses <- SpinaleProteinsAndResponses %>% 
+
+
+S <- S %>% 
   mutate(SPG130_standardized = (spg130 - meanSPG130)/sdSPG130)
 
-ggplot(SpinaleProteinsAndResponses, aes(x = SPG130_standardized)) +
+ggplot(S, aes(x = SPG130_standardized)) +
   geom_histogram()
 
-ggplot(SpinaleProteinsAndResponses, aes(x = response, y = SPG130_standardized)) +
+ggplot(S, aes(x = response, y = SPG130_standardized)) +
   geom_point() 
 
-boxplot(SpinaleProteinsAndResponses$SPG130_standardized)
+boxplot(S$SPG130_standardized)
 
 
 #standardizing sil2ra and checking its distribution/relationship with 
 #target variable
 
 
-boxplot(SpinaleProteinsAndResponses$sil2ra)
-sort(SpinaleProteinsAndResponses$sil2ra,partial=n)[n]
-sort(SpinaleProteinsAndResponses$sil2ra,partial=n-1)[n-1]
-sort(SpinaleProteinsAndResponses$sil2ra,partial=n-2)[n-2]
-sort(SpinaleProteinsAndResponses$sil2ra,partial=n-3)[n-3]
-sort(SpinaleProteinsAndResponses$sil2ra,partial=n-4)[n-4]
-sort(SpinaleProteinsAndResponses$sil2ra,partial=n-5)[n-5]
+boxplot(S$sil2ra)
+sort(S$sil2ra,partial=n)[n]
+sort(S$sil2ra,partial=n-1)[n-1]
+sort(S$sil2ra,partial=n-2)[n-2]
+sort(S$sil2ra,partial=n-3)[n-3]
+sort(S$sil2ra,partial=n-4)[n-4]
+sort(S$sil2ra,partial=n-5)[n-5]
 
-which(SpinaleProteinsAndResponses$sil2ra > 4000)
+which(S$sil2ra > 4000)
 
-SpinaleProteinsAndResponses$sil2ra[c(21, 29, 44, 257, 304)] <- 3397
-
-
-meanSIL2RA <- mean(SpinaleProteinsAndResponses$sil2ra)
-sdSIL2RA <- sd(SpinaleProteinsAndResponses$sil2ra)
+S$sil2ra[c(21, 29, 44, 257, 304)] <- 3397
 
 
+meanSIL2RA <- mean(S$sil2ra)
+sdSIL2RA <- sd(S$sil2ra)
 
-SpinaleProteinsAndResponses <- SpinaleProteinsAndResponses %>% 
+
+
+S <- S %>% 
   mutate(SIL2RA_standardized = (sil2ra - meanSIL2RA)/sdSIL2RA)
 
-ggplot(SpinaleProteinsAndResponses, aes(x = SIL2RA_standardized)) +
+ggplot(S, aes(x = SIL2RA_standardized)) +
   geom_histogram()
 
-ggplot(SpinaleProteinsAndResponses, aes(x = response, y = SIL2RA_standardized)) +
+ggplot(S, aes(x = response, y = SIL2RA_standardized)) +
   geom_point() 
 
-boxplot(SpinaleProteinsAndResponses$SIL2RA_standardized)
+boxplot(S$SIL2RA_standardized)
 
 
 #standardizing tnfrii and checking its distribution/relationship with 
 #target variable
 
-boxplot(SpinaleProteinsAndResponses$tnfrii)
-sort(SpinaleProteinsAndResponses$tnfrii,partial=n)[n]
-sort(SpinaleProteinsAndResponses$tnfrii,partial=n-1)[n-1]
-sort(SpinaleProteinsAndResponses$tnfrii,partial=n-2)[n-2]
-sort(SpinaleProteinsAndResponses$tnfrii,partial=n-3)[n-3]
-sort(SpinaleProteinsAndResponses$tnfrii,partial=n-4)[n-4]
+boxplot(S$tnfrii)
+sort(S$tnfrii,partial=n)[n]
+sort(S$tnfrii,partial=n-1)[n-1]
+sort(S$tnfrii,partial=n-2)[n-2]
+sort(S$tnfrii,partial=n-3)[n-3]
+sort(S$tnfrii,partial=n-4)[n-4]
 
 
 
 
-which(SpinaleProteinsAndResponses$tnfrii == 57589)
+which(S$tnfrii == 57589)
 
-SpinaleProteinsAndResponses$tnfrii[c(19, 21, 212, 472)] <- 40660
+S$tnfrii[c(19, 21, 212, 472)] <- 40660
 
-meanTNFRII <- mean(SpinaleProteinsAndResponses$tnfrii)
-sdTNFRII <- sd(SpinaleProteinsAndResponses$tnfrii)
+meanTNFRII <- mean(S$tnfrii)
+sdTNFRII <- sd(S$tnfrii)
 
 
 
-SpinaleProteinsAndResponses <- SpinaleProteinsAndResponses %>% 
+S <- S %>% 
   mutate(TIFRII_standardized = (tnfrii - meanTNFRII)/sdTNFRII)
 
-ggplot(SpinaleProteinsAndResponses, aes(x = TIFRII_standardized)) +
+ggplot(S, aes(x = TIFRII_standardized)) +
   geom_histogram()
 
-ggplot(SpinaleProteinsAndResponses, aes(x = response, y = TIFRII_standardized)) +
+ggplot(S, aes(x = response, y = TIFRII_standardized)) +
   geom_point() 
 
-boxplot(SpinaleProteinsAndResponses$TIFRII_standardized)
+boxplot(S$TIFRII_standardized)
 
 
 #standardizing ifng and checking its distribution/relationship with 
 #target variable
 
 
-boxplot(SpinaleProteinsAndResponses$ifng)
-sort(SpinaleProteinsAndResponses$ifng,partial=n)[n]
-sort(SpinaleProteinsAndResponses$ifng,partial=n-1)[n-1]
-sort(SpinaleProteinsAndResponses$ifng,partial=n-2)[n-2]
-sort(SpinaleProteinsAndResponses$ifng,partial=n-3)[n-3]
-sort(SpinaleProteinsAndResponses$ifng,partial=n-4)[n-4]
-sort(SpinaleProteinsAndResponses$ifng,partial=n-5)[n-5]
-sort(SpinaleProteinsAndResponses$ifng,partial=n-6)[n-6]
+boxplot(S$ifng)
+sort(S$ifng,partial=n)[n]
+sort(S$ifng,partial=n-1)[n-1]
+sort(S$ifng,partial=n-2)[n-2]
+sort(S$ifng,partial=n-3)[n-3]
+sort(S$ifng,partial=n-4)[n-4]
+sort(S$ifng,partial=n-5)[n-5]
+sort(S$ifng,partial=n-6)[n-6]
 
 
 
-which(SpinaleProteinsAndResponses$ifng > 24)
+which(S$ifng > 24)
 
-SpinaleProteinsAndResponses$ifng[c(102, 145, 157, 409, 439, 650, 651)] <- 24.97271
+S$ifng[c(102, 145, 157, 409, 439, 650, 651)] <- 24.97271
 
-meanIFNG <- mean(SpinaleProteinsAndResponses$ifng)
-sdIFNG <- sd(SpinaleProteinsAndResponses$ifng)
+meanIFNG <- mean(S$ifng)
+sdIFNG <- sd(S$ifng)
 
 
 
-SpinaleProteinsAndResponses <- SpinaleProteinsAndResponses %>% 
+S <- S %>% 
   mutate(IFNG_standardized = (ifng - meanIFNG)/sdIFNG)
 
-ggplot(SpinaleProteinsAndResponses, aes(x = IFNG_standardized)) +
+ggplot(S, aes(x = IFNG_standardized)) +
   geom_histogram()
 
-ggplot(SpinaleProteinsAndResponses, aes(x = response, y = IFNG_standardized)) +
+ggplot(S, aes(x = response, y = IFNG_standardized)) +
   geom_point() 
 
 
-boxplot(SpinaleProteinsAndResponses$IFNG_standardized)
-
-#------------------------------------------------------------------------------
-
-
-#standardizing diastolic blood pressure and checking its 
-#distribution/relationship with target variable
-
-SpinaleClinicalMarkersAndResponse <- S %>% 
-  select(bpdia, bpsys, LVEDV, LVESV, response)
-
-
-n1 <- length(SpinaleClinicalMarkersAndResponse$bpdia)
-
-sort(SpinaleClinicalMarkersAndResponse$bpdia,partial=n1)[n1]
-sort(SpinaleClinicalMarkersAndResponse$bpdia,partial=n1-1)[n1-1]
-
-which(SpinaleClinicalMarkersAndResponse$bpdia > 150)
-
-SpinaleClinicalMarkersAndResponse$bpdia[c(220)] <- 119
-
-boxplot(SpinaleClinicalMarkersAndResponse$bpdia)
-
-
-
-meanDiastolic <- mean(SpinaleClinicalMarkersAndResponse$bpdia)
-sdDiastolic <- sd(SpinaleClinicalMarkersAndResponse$bpdia)
-
-
-
-SpinaleClinicalMarkersAndResponse <- SpinaleClinicalMarkersAndResponse %>% 
-  mutate(standardized_dystolicBloodPressure = (bpdia - meanDiastolic)/sdDiastolic)
-
-ggplot(SpinaleClinicalMarkersAndResponse, aes(x = response, y = standardized_dystolicBloodPressure)) +
-  geom_point() 
-
-
-#standardizing diastolic blood pressure and checking its 
-#distribution/relationship with target variable
-
-boxplot(SpinaleClinicalMarkersAndResponse$bpsys)
-
-
-meanSystolic <- mean(SpinaleClinicalMarkersAndResponse$bpsys)
-sdSystolic <- sd(SpinaleClinicalMarkersAndResponse$bpsys)
-
-SpinaleClinicalMarkersAndResponse <- SpinaleClinicalMarkersAndResponse %>% 
-  mutate(standardized_systolicBloodPressure = (bpsys - meanSystolic)/sdSystolic)
-
-ggplot(SpinaleClinicalMarkersAndResponse, aes(x = response, y = standardized_systolicBloodPressure)) +
-  geom_point() 
-
-#standardizing LVESV and checking its 
-#distribution/relationship with target variable
-
-boxplot(SpinaleClinicalMarkersAndResponse$LVESV)
-
-sort(SpinaleClinicalMarkersAndResponse$LVESV,partial=n1)[n1]
-sort(SpinaleClinicalMarkersAndResponse$LVESV,partial=n1-1)[n1-1]
-
-which(SpinaleClinicalMarkersAndResponse$LVESV > 500)
-SpinaleClinicalMarkersAndResponse$LVESV[c(767)] <- 447
-
-meanLVESV <- mean(SpinaleClinicalMarkersAndResponse$LVESV)
-sdLVESV <- sd(SpinaleClinicalMarkersAndResponse$LVESV)
-
-SpinaleClinicalMarkersAndResponse <- SpinaleClinicalMarkersAndResponse %>% 
-  mutate(LVESV_standardized = (LVESV - meanLVESV)/sdLVESV)
-
-ggplot(SpinaleClinicalMarkersAndResponse, aes(x = response, y = LVESV_standardized)) +
-  geom_point() 
-
-#standardizing LVEDV and checking its 
-#distribution/relationship with target variable
-
-boxplot(SpinaleClinicalMarkersAndResponse$LVEDV)
-
-sort(SpinaleClinicalMarkersAndResponse$LVEDV,partial=n1)[n1]
-sort(SpinaleClinicalMarkersAndResponse$LVEDV,partial=n1-1)[n1-1]
-
-which(SpinaleClinicalMarkersAndResponse$LVEDV > 600)
-SpinaleClinicalMarkersAndResponse$LVEDV[c(767)] <- 513
-
-meanLVEDV <- mean(SpinaleClinicalMarkersAndResponse$LVEDV)
-sdLVEDV <- sd(SpinaleClinicalMarkersAndResponse$LVEDV)
-
-SpinaleClinicalMarkersAndResponse <- SpinaleClinicalMarkersAndResponse %>% 
-  mutate(LVEDV_standardized = (LVEDV - meanLVEDV)/sdLVEDV)
-
-ggplot(SpinaleClinicalMarkersAndResponse, aes(x = response, y = LVEDV_standardized)) +
-  geom_point() 
-
-#creating new variables
-SpinaleClinicalMarkersAndResponse <- SpinaleClinicalMarkersAndResponse %>% 
-  mutate(PulsePressure = bpsys - bpdia)
-
-ggplot(SpinaleClinicalMarkersAndResponse, aes(x = response, y = PulsePressure)) +
-  geom_point() 
-
-meanPulsePressure <- mean(SpinaleClinicalMarkersAndResponse$PulsePressure)
-sdPulsePressure <- sd(SpinaleClinicalMarkersAndResponse$PulsePressure)
-
-SpinaleClinicalMarkersAndResponse <- SpinaleClinicalMarkersAndResponse %>% 
-  mutate(pulsePressure_standardized = (PulsePressure - meanPulsePressure)/sdPulsePressure)
-
-
-SpinaleClinicalMarkersAndResponse <- SpinaleClinicalMarkersAndResponse %>% 
-  mutate(StrokeVolume = LVEDV - LVESV)
-
-ggplot(SpinaleClinicalMarkersAndResponse, aes(x = response, y = StrokeVolume)) +
-  geom_point() 
-
-meanStrokeVolume <- mean(SpinaleClinicalMarkersAndResponse$StrokeVolume)
-sdStrokeVolume <- sd(SpinaleClinicalMarkersAndResponse$StrokeVolume)
-
-SpinaleClinicalMarkersAndResponse <- SpinaleClinicalMarkersAndResponse %>% 
-  mutate(StrokeVolume_standardized = (StrokeVolume - meanStrokeVolume)/sdStrokeVolume)
-
-
-SpinaleClinicalMarkersAndResponse <- SpinaleClinicalMarkersAndResponse %>% 
-  mutate(EjectionFraction = StrokeVolume - LVEDV)
-
-ggplot(SpinaleClinicalMarkersAndResponse, aes(x = response, y = EjectionFraction)) +
-  geom_point() 
-
-meanEjectionFraction <- mean(SpinaleClinicalMarkersAndResponse$EjectionFraction)
-sdEjectionFraction <- sd(SpinaleClinicalMarkersAndResponse$EjectionFraction)
-
-SpinaleClinicalMarkersAndResponse <- SpinaleClinicalMarkersAndResponse %>% 
-  mutate(EjectionFraction_standardized = (EjectionFraction - meanEjectionFraction)/sdEjectionFraction)
-
-
-SpinaleClinicalMarkersAndResponse <- SpinaleClinicalMarkersAndResponse %>% 
-  mutate(Stretch = LVEDV / LVESV)
-
-ggplot(SpinaleClinicalMarkersAndResponse, aes(x = response, y = Stretch)) +
-  geom_point()
-
-meanStretch <- mean(SpinaleClinicalMarkersAndResponse$Stretch)
-sdStretch <- sd(SpinaleClinicalMarkersAndResponse$Stretch)
-
-SpinaleClinicalMarkersAndResponse <- SpinaleClinicalMarkersAndResponse %>% 
-  mutate(Stretch_standardized = (Stretch - meanStretch)/sdStretch)
-
-
-SpinaleClinicalMarkersAndResponse1 <- SpinaleClinicalMarkersAndResponse %>% 
-  select(standardized_dystolicBloodPressure, standardized_systolicBloodPressure, 
-         LVESV_standardized, LVEDV_standardized, pulsePressure_standardized, 
-         StrokeVolume_standardized, Stretch_standardized, EjectionFraction_standardized,
-         response)
-
-indexes <- createDataPartition(SpinaleClinicalMarkersAndResponse1$response,
-                               times = 1,
-                               p = 0.8,
-                               list = FALSE)
-
-SpinaleClinicalMarkersAndResponses_training <- SpinaleClinicalMarkersAndResponse1[indexes,]
-SpinaleClinicalMarkersAndResponses_test <- SpinaleClinicalMarkersAndResponse1[-indexes,]
-
-
-
-
-ctrl <- trainControl(method = "repeatedcv",
-                     number = 10,
-                     repeats = 3,
-                     verboseIter = TRUE)
-
-rf <- train(response ~ Stretch_standardized + pulsePressure_standardized + 
-              standardized_dystolicBloodPressure + standardized_systolicBloodPressure,
-            SpinaleClinicalMarkersAndResponses_training,
-                       method = "rf",
-                       trControl = ctrl,
-                       tuneLength = 9,
-                       metric = "Accuracy")
-
-
-
-plot(varImp(rf, scale = TRUE))
-varImp(rf)
-
-preds_rf <- predict(rf, SpinaleClinicalMarkersAndResponses_test)
-results_rf <- confusionMatrix(preds_rf, SpinaleClinicalMarkersAndResponses_test$response)
-results_rf1 <- as.matrix(results_rf)
-results_rf2 <- as.matrix(results_rf, what = "overall")
-results_rf3 <- as.matrix(results_rf, what = "classes")
-
-logistic_regression <- train(response ~ Stretch_standardized + pulsePressure_standardized + 
-                               standardized_dystolicBloodPressure + standardized_systolicBloodPressure,
-                                                     data = SpinaleClinicalMarkersAndResponses_training,
-                                                     family = "binomial",
-                                                     method = "glm",
-                                                     trControl = ctrl,
-                                                     metric = "Accuracy")
-
-logistic_regression
-
-preds_logistic_regression <- predict(logistic_regression, SpinaleClinicalMarkersAndResponses_test)
-results_logistic_regression <- confusionMatrix(preds_logistic_regression, SpinaleClinicalMarkersAndResponses_test$response)
-results_logistic_regression1 <- as.matrix(results_logistic_regression)
-results_logistic_regression2 <- as.matrix(results_logistic_regression, what = "overall")
-results_logistic_regression3 <- as.matrix(results_logistic_regression, what = "classes")
-
-
-
+boxplot(S$IFNG_standardized)
 
 
 
 #------------------------------------------------------------------------------
 
-most_important_variables <- data.frame(fromWhichModel = "a",
-                  importantVariable1="a",
-                 importantVariable2="a",
-                 importantVariable3="a",
-                 importantVariable4 = "a",
-                 importantVariable5 = "a")
 
 
 results_for_each_ML_algorithm <- data.frame(nameOfRun = "a",
-                                            variable1 = "a",
-                                            variable2 = "a",
-                                            variable3 = "a", 
-                                            variable4 = "a",
-                                            variable5 = "a",
                                             Accuracy = 1,
                                             Kappa = 1,
                                             AccuracyLower = 1,
@@ -655,815 +438,5385 @@ results_for_each_ML_algorithm <- data.frame(nameOfRun = "a",
 
 
 
-SpinaleProteinsAndResponses2 <- SpinaleProteinsAndResponses %>% 
+SpinaleProteinsAndResponses2 <- S %>% 
   select(MMP2_standardized, MMP9_standardized, ST2_standardized, CRP_standardized, BNP_standardized, TIMP1_standardized, TIMP2_standardized, TIM4_standardized, SPG130_standardized, SIL2RA_standardized, TIFRII_standardized, IFNG_standardized, response)
-
-
-cl <- makeCluster(4, type = "SOCK")
-registerDoSNOW(cl)
-for (i in 1:30)
-  {
-SpinaleProteinsAndResponses3 <- SpinaleProteinsAndResponses2[sample(nrow(SpinaleProteinsAndResponses2)),]
-
-indexes <- createDataPartition(SpinaleProteinsAndResponses3$response,
-                               times = 1,
-                               p = 0.8,
-                               list = FALSE)
-
-SpinaleProteinsAndResponses_training <- SpinaleProteinsAndResponses3[indexes,]
-SpinaleProteinsAndResponses_test <- SpinaleProteinsAndResponses3[-indexes,]
 
 
 
 
 ctrl <- trainControl(method = "repeatedcv",
-                    number = 10,
-                    repeats = 3,
-                    verboseIter = TRUE)
+                     number = 10,
+                     verboseIter = TRUE)
+
+ctrl_5_fold_CV <- trainControl(method = "repeatedcv",
+                               number = 5,
+                               verboseIter = TRUE)
+
+variables_biochemical <- as.data.frame(c(1, 2, 3))
+
+for (i in 1:50)
+{
+  SpinaleProteinsAndResponses_variables <- SpinaleProteinsAndResponses2[sample(nrow(SpinaleProteinsAndResponses2)),]
+  
+  indexes_variables <- createDataPartition(SpinaleProteinsAndResponses_variables$response,
+                                 times = 1,
+                                 p = 0.8,
+                                 list = FALSE)
+  
+  SpinaleProteinsAndResponses_variables_training <- SpinaleProteinsAndResponses_variables[indexes_variables,]
+  SpinaleProteinsAndResponses_variables_test <- SpinaleProteinsAndResponses_variables[-indexes_variables,]
+  
+  
+  #random forest variables
+  rf_predictors <- train(response ~.,
+                         SpinaleProteinsAndResponses_variables_training,
+                         method = "rf",
+                         trControl = ctrl,
+                         tuneLength = 12,
+                         metric = "Accuracy")
+  
+  
+  plot(varImp(rf_predictors, scale = TRUE))
+  
+  varImp(rf_predictors)
+  
+  imps_rf <- as.data.frame(rf_predictors$coefnames)
+  important_variables_rf <- cbind(imps_rf, varImp(rf_predictors)$importance)
+  
+  important_variables_rf %>% arrange(desc(Overall))
+  
+  important_variables_over_60_rf <- important_variables_rf %>%
+      filter(Overall >= 60) %>% arrange(desc(Overall))
+  
 
-#ridge regression
+  variables_biochemical <- merge(data.frame(variables_biochemical, row.names=NULL), data.frame(important_variables_over_60_rf, row.names=NULL), by = 0, all = TRUE)[-1]
+  
+  
+  
+  #lasso variables
+  lasso_variables <- train(response ~.,
+                           SpinaleProteinsAndResponses_variables_training,
+                           family = "binomial",
+                           method = "glmnet",
+                           tuneGrid = expand.grid(alpha = 1,
+                                                  lambda = seq(0.0000001, 0.2, length = 20)),
+                           trControl = ctrl)
+  
 
-ridge_variables <- train(response ~.,
-                  SpinaleProteinsAndResponses_training,
-                  family = "binomial",
-                  method = "glmnet",
-                  tuneGrid = expand.grid(alpha = 0,
-                                         lambda = seq(0.000001, 1, length = 10)),
-                  trControl = ctrl)
+  plot(varImp(lasso_variables, scale = TRUE))
+  
+  imps_lasso <- as.data.frame(lasso_variables$coefnames)
+  
+  important_variables_lasso <- cbind(imps_lasso, varImp(lasso_variables)$importance)
+  
+  important_variables_lasso %>% arrange(desc(Overall))
+  
+  important_variables_over_60_lasso <- important_variables_lasso %>%
+    filter(Overall >= 60) %>% arrange(desc(Overall))
+  
+  
+  variables_biochemical <- merge(data.frame(variables_biochemical, row.names=NULL), data.frame(important_variables_over_60_lasso, row.names=NULL), by = 0, all = TRUE)[-1]
+  
+  
+  
+}
 
+#the most important variables are ST2, CRP and TIFRII
 
-plot(ridge_variables)
 
-ridge_variables
-plot(ridge_variables$finalModel, xvar = "lambda", label = TRUE)
-plot(ridge_variables$finalModel, xvar = "dev", label = TRUE)
-plot(varImp(ridge_variables, scale = TRUE))
 
-imps_ridge <- as.data.frame(varImp(ridge_variables)$importance)
+#----------------------------------------------------------------------------
+#standardizing clinical variables, removing outliers and finding important variables
 
+#standardizing diastolic blood pressure and checking its 
+#distribution/relationship with target variable
+n1 <- length(S$bpdia)
 
-variable1_ridge <- rownames(imps_ridge)[order(imps_ridge$Overall, decreasing=TRUE)][1]
-variable2_ridge <- rownames(imps_ridge)[order(imps_ridge$Overall, decreasing=TRUE)][2]
-variable3_ridge <- rownames(imps_ridge)[order(imps_ridge$Overall, decreasing=TRUE)][3]
-variable4_ridge <- rownames(imps_ridge)[order(imps_ridge$Overall, decreasing=TRUE)][4]
-variable5_ridge <- rownames(imps_ridge)[order(imps_ridge$Overall, decreasing=TRUE)][5]
+sort(S$bpdia,partial=n1)[n1]
+sort(S$bpdia,partial=n1-1)[n1-1]
 
-df_ridge_names <- data.frame(fromWhichModel = "Ridge Regression Variable Selection",
-                             importantVariable1 = variable1_ridge,
-                             importantVariable2 = variable2_ridge,
-                             importantVariable3 = variable3_ridge,
-                             importantVariable4 = variable4_ridge,
-                             importantVariable5 = variable5_ridge)
 
+boxplot(S$bpdia)
 
-most_important_variables <- rbind(most_important_variables, df_ridge_names)
 
 
-important_variable_for_Ridge_Regression1 <- SpinaleProteinsAndResponses_training[, variable1_ridge]
-important_variable_for_Ridge_Regression2 <- SpinaleProteinsAndResponses_training[, variable2_ridge]
-important_variable_for_Ridge_Regression3 <- SpinaleProteinsAndResponses_training[, variable3_ridge]
-important_variable_for_Ridge_Regression4 <- SpinaleProteinsAndResponses_training[, variable4_ridge]
-important_variable_for_Ridge_Regression5 <- SpinaleProteinsAndResponses_training[, variable5_ridge]
+meanDiastolic <- mean(S$bpdia)
+sdDiastolic <- sd(S$bpdia)
 
 
-df_of_important_variables_and_their_columns_ridge <- data.frame(importantVariableRidge1 = important_variable_for_Ridge_Regression1,
-                                                importantVariableRidge2 = important_variable_for_Ridge_Regression2,
-                                                importantVariableRidge3 = important_variable_for_Ridge_Regression3,
-                                                importantVariableRidge4 = important_variable_for_Ridge_Regression4,
-                                               importantVariableRidge5 = important_variable_for_Ridge_Regression5)
 
-df_of_important_variables_and_their_columns_ridge$response <- SpinaleProteinsAndResponses_training$response
+S <- S %>% 
+  mutate(standardized_dystolicBloodPressure = (bpdia - meanDiastolic)/sdDiastolic)
 
-#lasso regression
+ggplot(S, aes(x = response, y = standardized_dystolicBloodPressure)) +
+  geom_point() 
 
-lasso_variables <- train(response ~.,
-                        SpinaleProteinsAndResponses_training,
-                        family = "binomial",
-                        method = "glmnet",
-                        tuneGrid = expand.grid(alpha = 1,
-                                               lambda = seq(0.0000001, 0.2, length = 20)),
-                        trControl = ctrl)
 
-plot(lasso_variables)
-lasso_variables
-plot(lasso_variables$finalModel, xvar = "lambda", label = TRUE)
-plot(lasso_variables$finalModel, xvar = "dev", label = TRUE)
-plot(varImp(lasso_variables, scale = TRUE))
+#standardizing systolic blood pressure and checking its 
+#distribution/relationship with target variable
 
-imps_lasso <- as.data.frame(varImp(lasso_variables)$importance)
 
+boxplot(S$bpsys)
 
-variable1_lasso <- rownames(imps_lasso)[order(imps_lasso$Overall, decreasing=TRUE)][1]
-variable2_lasso <- rownames(imps_lasso)[order(imps_lasso$Overall, decreasing=TRUE)][2]
-variable3_lasso <- rownames(imps_lasso)[order(imps_lasso$Overall, decreasing=TRUE)][3]
-variable4_lasso <- rownames(imps_lasso)[order(imps_lasso$Overall, decreasing=TRUE)][4]
-variable5_lasso <- rownames(imps_lasso)[order(imps_lasso$Overall, decreasing=TRUE)][5]
 
-df_lasso_names <- data.frame(fromWhichModel = "Lasso Regression Variable Selection",
-                             importantVariable1 = variable1_lasso,
-                             importantVariable2 = variable2_lasso,
-                             importantVariable3 = variable3_lasso,
-                             importantVariable4 = variable4_lasso,
-                             importantVariable5 = variable5_lasso)
+meanSystolic <- mean(S$bpsys)
+sdSystolic <- sd(S$bpsys)
 
+S <- S %>% 
+  mutate(standardized_systolicBloodPressure = (bpsys - meanSystolic)/sdSystolic)
 
-most_important_variables <- rbind(most_important_variables, df_lasso_names)
+ggplot(S, aes(x = response, y = standardized_systolicBloodPressure)) +
+  geom_point() 
 
+#standardizing LVESV and checking its 
+#distribution/relationship with target variable
 
+boxplot(S$LVESV)
 
-important_variable_for_Lasso_Regression1 <- SpinaleProteinsAndResponses_training[, variable1_lasso]
-important_variable_for_Lasso_Regression2 <- SpinaleProteinsAndResponses_training[, variable2_lasso]
-important_variable_for_Lasso_Regression3 <- SpinaleProteinsAndResponses_training[, variable3_lasso]
-important_variable_for_Lasso_Regression4 <- SpinaleProteinsAndResponses_training[, variable4_lasso]
-important_variable_for_Lasso_Regression5 <- SpinaleProteinsAndResponses_training[, variable5_lasso]
+sort(S$LVESV,partial=n1)[n1]
+sort(S$LVESV,partial=n1-1)[n1-1]
 
+which(S$LVESV > 500)
+S$LVESV[c(685)] <- 447
 
-df_of_important_variables_and_their_columns_lasso <- data.frame(importantVariableLasso1=important_variable_for_Lasso_Regression1,
-                                                                importantVariableLasso2=important_variable_for_Lasso_Regression2,
-                                                                importantVariableLasso3=important_variable_for_Lasso_Regression3,
-                                                                importantVariableLasso4 = important_variable_for_Lasso_Regression4,
-                                                                importantVariableLasso5 = important_variable_for_Lasso_Regression5)
+meanLVESV <- mean(S$LVESV)
+sdLVESV <- sd(S$LVESV)
 
-df_of_important_variables_and_their_columns_lasso$response <- SpinaleProteinsAndResponses_training$response
+S <- S %>% 
+  mutate(LVESV_standardized = (LVESV - meanLVESV)/sdLVESV)
 
+ggplot(S, aes(x = response, y = LVESV_standardized)) +
+  geom_point() 
 
+#standardizing LVEDV and checking its 
+#distribution/relationship with target variable
 
+boxplot(S$LVEDV)
 
+sort(S$LVEDV,partial=n1)[n1]
+sort(S$LVEDV,partial=n1-1)[n1-1]
 
+which(S$LVEDV > 600)
+S$LVEDV[c(685)] <- 513
 
-#random forest predictors
+meanLVEDV <- mean(S$LVEDV)
+sdLVEDV <- sd(S$LVEDV)
 
-rf_predictors <- train(response ~.,
-                        SpinaleProteinsAndResponses_training,
-                        method = "rf",
-                        trControl = ctrl,
-                        tuneLength = 12,
-                        metric = "Accuracy")
+S <- S %>% 
+  mutate(LVEDV_standardized = (LVEDV - meanLVEDV)/sdLVEDV)
 
+ggplot(SpinaleClinicalMarkersAndResponse, aes(x = response, y = LVEDV_standardized)) +
+  geom_point() 
 
+#creating new variables
+S <- S %>% 
+  mutate(PulsePressure = bpsys - bpdia)
 
-plot(varImp(rf_predictors, scale = TRUE))
-varImp(rf_predictors)
-imps_rf <- as.data.frame(varImp(rf_predictors)$importance)
+ggplot(S, aes(x = response, y = PulsePressure)) +
+  geom_point() 
 
+meanPulsePressure <- mean(S$PulsePressure)
+sdPulsePressure <- sd(S$PulsePressure)
 
-variable1_rf <- rownames(imps_rf)[order(imps_rf$Overall, decreasing=TRUE)][1]
-variable2_rf <- rownames(imps_rf)[order(imps_rf$Overall, decreasing=TRUE)][2]
-variable3_rf <- rownames(imps_rf)[order(imps_rf$Overall, decreasing=TRUE)][3]
-variable4_rf <- rownames(imps_rf)[order(imps_rf$Overall, decreasing=TRUE)][4]
-variable5_rf <- rownames(imps_rf)[order(imps_rf$Overall, decreasing=TRUE)][5]
+S <- S %>% 
+  mutate(pulsePressure_standardized = (PulsePressure - meanPulsePressure)/sdPulsePressure)
 
-df_rf_names <- data.frame(fromWhichModel = "Random Forest Variable Selection",
-                          importantVariable1 = variable1_rf,
-                          importantVariable2 = variable2_rf,
-                          importantVariable3 = variable3_rf,
-                          importantVariable4 = variable4_rf,
-                          importantVariable5 = variable5_rf)
 
+S <- S %>% 
+  mutate(StrokeVolume = LVEDV - LVESV)
 
-most_important_variables <- rbind(most_important_variables, df_rf_names)
+ggplot(S, aes(x = response, y = StrokeVolume)) +
+  geom_point() 
 
+meanStrokeVolume <- mean(S$StrokeVolume)
+sdStrokeVolume <- sd(S$StrokeVolume)
 
+S <- S %>% 
+  mutate(StrokeVolume_standardized = (StrokeVolume - meanStrokeVolume)/sdStrokeVolume)
 
-important_variable_for_Random_Forest_1 <- SpinaleProteinsAndResponses_training[, variable1_rf]
-important_variable_for_Random_Forest_2 <- SpinaleProteinsAndResponses_training[, variable2_rf]
-important_variable_for_Random_Forest_3 <- SpinaleProteinsAndResponses_training[, variable3_rf]
-important_variable_for_Random_Forest_4 <- SpinaleProteinsAndResponses_training[, variable4_rf]
-important_variable_for_Random_Forest_5 <- SpinaleProteinsAndResponses_training[, variable5_rf]
 
+S <- S %>% 
+  mutate(EjectionFraction = StrokeVolume - LVEDV)
 
-df_of_important_variables_and_their_columns_random_forest <- data.frame(importantVariableRandomForest1=important_variable_for_Random_Forest_1,
-                                                                importantVariableRandomForest2=important_variable_for_Random_Forest_2,
-                                                                importantVariableRandomForest3=important_variable_for_Random_Forest_3,
-                                                                importantVariableRandomForest4 = important_variable_for_Random_Forest_4,
-                                                                importantVariableRandomForest5 = important_variable_for_Random_Forest_5)
+ggplot(S, aes(x = response, y = EjectionFraction)) +
+  geom_point() 
 
-df_of_important_variables_and_their_columns_random_forest$response <- SpinaleProteinsAndResponses_training$response
+meanEjectionFraction <- mean(S$EjectionFraction)
+sdEjectionFraction <- sd(S$EjectionFraction)
 
+S <- S %>% 
+  mutate(EjectionFraction_standardized = (EjectionFraction - meanEjectionFraction)/sdEjectionFraction)
 
 
+S <- S %>% 
+  mutate(Stretch = LVEDV / LVESV)
 
+ggplot(S, aes(x = response, y = Stretch)) +
+  geom_point()
 
+meanStretch <- mean(S$Stretch)
+sdStretch <- sd(S$Stretch)
 
-#random forests
-#random forest for ridge regression
+S <- S %>% 
+  mutate(Stretch_standardized = (Stretch - meanStretch)/sdStretch)
 
-rf_ridge_variables <- train(response ~.,
-              df_of_important_variables_and_their_columns_ridge,
-                    method = "rf",
-                    trControl = ctrl,
-                    tuneLength = 5,
-                    ntrees = 1000,
-                    metric = "Accuracy")
 
 
-preds_rf_ridge_variables <- predict(rf_ridge_variables, SpinaleProteinsAndResponses_test)
-results_rf_ridge_variables <- confusionMatrix(preds_rf_ridge_variables, SpinaleProteinsAndResponses_test$response)
-results_rf_ridge_1 <- as.matrix(results_rf_ridge_variables)
-results_rf_ridge_2 <- as.matrix(results_rf_ridge_variables, what = "overall")
-results_rf_ridge_3 <- as.matrix(results_rf_ridge_variables, what = "classes")
 
-random_forest_ridge_variables_trues_falses <- as.data.frame(results_rf_ridge_1)
 
-random_forest_ridge_variables_accuracy_numbers <- as.data.frame(results_rf_ridge_2)
-random_forest_ridge_variables_accuracy_numbers = t(random_forest_ridge_variables_accuracy_numbers)
-random_forest_ridge_variables_accuracy_numbers <- as.data.frame(random_forest_ridge_variables_accuracy_numbers)
 
-random_forest_ridge_variables_precision_recall_F1 <- as.data.frame(results_rf_ridge_3)
-random_forest_ridge_variables_precision_recall_F1 = t(random_forest_ridge_variables_precision_recall_F1)
-random_forest_ridge_variables_precision_recall_F1 <- as.data.frame(random_forest_ridge_variables_precision_recall_F1)
 
-big_rf_ridge = merge(random_forest_ridge_variables_accuracy_numbers,random_forest_ridge_variables_precision_recall_F1)
-big_rf_ridge$nameOfRun <- "random forest with ridge predictors"
-big_rf_ridge$variable1 <- variable1_ridge
-big_rf_ridge$variable2 <- variable2_ridge
-big_rf_ridge$variable3 <- variable3_ridge
-big_rf_ridge$variable4 <- variable4_ridge
-big_rf_ridge$variable5 <- variable5_ridge
-big_rf_ridge <- big_rf_ridge %>%
-  select(nameOfRun, everything())
 
-big_rf_ridge$FalseNegative <- random_forest_ridge_variables_trues_falses[1,2]
-big_rf_ridge$FalsePositive <- random_forest_ridge_variables_trues_falses[2,1]
 
-results_for_each_ML_algorithm <- rbind(results_for_each_ML_algorithm, big_rf_ridge)
+SpinaleClinicalMarkersAndResponseStandardized <- S %>% 
+  select(standardized_dystolicBloodPressure, standardized_systolicBloodPressure, 
+         LVESV_standardized, LVEDV_standardized, pulsePressure_standardized, 
+         StrokeVolume_standardized, Stretch_standardized, EjectionFraction_standardized,
+         response)
 
 
 
 
+variables_clinical <- as.data.frame(c(1, 2, 3))
 
+for (i in 1:50)
+{
+  Spinale_clinical_variables <- SpinaleClinicalMarkersAndResponseStandardized[sample(nrow(SpinaleClinicalMarkersAndResponseStandardized)),]
+  
+  indexes_clinical_variables <- createDataPartition(Spinale_clinical_variables$response,
+                                                    times = 1,
+                                                    p = 0.8,
+                                                    list = FALSE)
+  
+  Spinale_clinical_variables_training <- Spinale_clinical_variables[indexes_clinical_variables,]
+  Spinale_clinical_variables_test <- Spinale_clinical_variables[-indexes_clinical_variables,]
+  
+  
+  #random forest variables
+  rf_predictors_clinical <- train(response ~.,
+                                  Spinale_clinical_variables_training,
+                                  method = "rf",
+                                  trControl = ctrl,
+                                  tuneLength = 12,
+                                  metric = "Accuracy")
+  
+  
+  plot(varImp(rf_predictors_clinical, scale = TRUE))
+  
+  varImp(rf_predictors_clinical)
+  
+  imps_rf_clinical <- as.data.frame(rf_predictors_clinical$coefnames)
+  important_variables_rf_clinical <- cbind(imps_rf_clinical, varImp(rf_predictors_clinical)$importance)
+  
+  important_variables_rf_clinical %>% arrange(desc(Overall))
+  
+  important_variables_over_60_rf_clinical <- important_variables_rf_clinical %>%
+    filter(Overall >= 60) %>% arrange(desc(Overall))
+  
+  
+  variables_clinical <- merge(data.frame(variables_clinical, row.names=NULL), data.frame(important_variables_over_60_rf_clinical, row.names=NULL), by = 0, all = TRUE)[-1]
+  
+  
+  
+  #lasso variables
+  lasso_variables_clinical <- train(response ~.,
+                                    Spinale_clinical_variables_training,
+                                    family = "binomial",
+                                    method = "glmnet",
+                                    tuneGrid = expand.grid(alpha = 1,
+                                                           lambda = seq(0.0000001, 0.2, length = 20)),
+                                    trControl = ctrl)
+  
+  
+  plot(varImp(lasso_variables_clinical, scale = TRUE))
+  
+  imps_lasso_clinical <- as.data.frame(lasso_variables_clinical$coefnames)
+  
+  important_variables_lasso <- cbind(imps_lasso_clinical, varImp(lasso_variables_clinical)$importance)
+  
+  important_variables_lasso %>% arrange(desc(Overall))
+  
+  important_variables_over_60_lasso_clinical <- important_variables_lasso %>%
+    filter(Overall >= 60) %>% arrange(desc(Overall))
+  
+  
+  variables_clinical <- merge(data.frame(variables_clinical, row.names=NULL), data.frame(important_variables_over_60_lasso_clinical, row.names=NULL), by = 0, all = TRUE)[-1]
+  
+  
+  
+}
 
 
 
+#stroke volume really only important one
 
+#------------------------------------------------------------------------------
+#finding important variables for all standardized variables
+Spinale_all_standardized <- S%>%
+  select(standardized_dystolicBloodPressure, standardized_systolicBloodPressure, 
+         LVESV_standardized, LVEDV_standardized, pulsePressure_standardized, 
+         StrokeVolume_standardized, Stretch_standardized, EjectionFraction_standardized,
+         MMP2_standardized, MMP9_standardized, ST2_standardized, CRP_standardized, BNP_standardized, 
+         TIMP1_standardized, TIMP2_standardized, TIM4_standardized, SPG130_standardized,
+         SIL2RA_standardized, TIFRII_standardized, IFNG_standardized, response)
 
 
-#random forest for lasso regression
+variables_all <- as.data.frame(c(1,2,3))
 
-rf_lasso_variables <- train(response ~.,
-                  df_of_important_variables_and_their_columns_lasso,
-                    method = "rf",
-                    trControl = ctrl,
-                    tuneLength = 4,
-                    ntrees = 1000,
-                    metric = "Accuracy")
 
-
-rf_lasso_variables
-
-preds_rf_lasso_variables <- predict(rf_lasso_variables, SpinaleProteinsAndResponses_test)
-results_rf_lasso_variables <- confusionMatrix(preds_rf_lasso_variables, SpinaleProteinsAndResponses_test$response)
-results_rf_lasso_1 <- as.matrix(results_rf_lasso_variables)
-results_rf_lasso_2 <- as.matrix(results_rf_lasso_variables, what = "overall")
-results_rf_lasso_3 <- as.matrix(results_rf_lasso_variables, what = "classes")
-
-random_forest_lasso_variables_trues_falses <- as.data.frame(results_rf_lasso_1)
-
-random_forest_lasso_variables_accuracy_numbers <- as.data.frame(results_rf_lasso_2)
-random_forest_lasso_variables_accuracy_numbers = t(random_forest_lasso_variables_accuracy_numbers)
-random_forest_lasso_variables_accuracy_numbers <- as.data.frame(random_forest_lasso_variables_accuracy_numbers)
-
-random_forest_lasso_variables_precision_recall_F1 <- as.data.frame(results_rf_lasso_3)
-random_forest_lasso_variables_precision_recall_F1 = t(random_forest_lasso_variables_precision_recall_F1)
-random_forest_lasso_variables_precision_recall_F1 <- as.data.frame(random_forest_lasso_variables_precision_recall_F1)
-
-big_rf_lasso = merge(random_forest_lasso_variables_accuracy_numbers,random_forest_lasso_variables_precision_recall_F1)
-big_rf_lasso$nameOfRun <- "random forest with lasso predictors"
-big_rf_lasso$variable1 <- variable1_lasso
-big_rf_lasso$variable2 <- variable2_lasso
-big_rf_lasso$variable3 <- variable3_lasso
-big_rf_lasso$variable4 <- variable4_lasso
-big_rf_lasso$variable5 <- variable5_lasso
-big_rf_lasso <- big_rf_lasso %>%
-  select(nameOfRun, everything())
-
-big_rf_lasso$FalseNegative <- random_forest_lasso_variables_trues_falses[1,2]
-big_rf_lasso$FalsePositive <- random_forest_lasso_variables_trues_falses[2,1]
-
-results_for_each_ML_algorithm <- rbind(results_for_each_ML_algorithm, big_rf_lasso)
-
-
-
-
-
-#random forest for random forest variables
-
-rf_random_forest_variables <- train(response ~.,
-                            df_of_important_variables_and_their_columns_random_forest,
-                            method = "rf",
-                            trControl = ctrl,
-                            tuneLength = 4,
-                            ntrees = 1000,
-                            metric = "Accuracy")
-
-
-rf_random_forest_variables
-
-preds_rf_random_forest_variables <- predict(rf_random_forest_variables, SpinaleProteinsAndResponses_test)
-results_rf_random_forest_variables <- confusionMatrix(preds_rf_random_forest_variables, SpinaleProteinsAndResponses_test$response)
-results_rf_random_forest_1 <- as.matrix(results_rf_random_forest_variables)
-results_rf_random_forest_2 <- as.matrix(results_rf_random_forest_variables, what = "overall")
-results_rf_random_forest_3 <- as.matrix(results_rf_random_forest_variables, what = "classes")
-
-random_forest_random_forest_variables_trues_falses <- as.data.frame(results_rf_random_forest_1)
-
-random_forest_random_forest_variables_accuracy_numbers <- as.data.frame(results_rf_random_forest_2)
-random_forest_random_forest_variables_accuracy_numbers = t(random_forest_random_forest_variables_accuracy_numbers)
-random_forest_random_forest_variables_accuracy_numbers <- as.data.frame(random_forest_random_forest_variables_accuracy_numbers)
-
-random_forest_random_forest_variables_precision_recall_F1 <- as.data.frame(results_rf_random_forest_3)
-random_forest_random_forest_variables_precision_recall_F1 = t(random_forest_random_forest_variables_precision_recall_F1)
-random_forest_random_forest_variables_precision_recall_F1 <- as.data.frame(random_forest_random_forest_variables_precision_recall_F1)
-
-big_rf_random_forest = merge(random_forest_random_forest_variables_accuracy_numbers,random_forest_random_forest_variables_precision_recall_F1)
-big_rf_random_forest$nameOfRun <- "random forest with random forest predictors"
-big_rf_random_forest$variable1 <- variable1_rf
-big_rf_random_forest$variable2 <- variable2_rf
-big_rf_random_forest$variable3 <- variable3_rf
-big_rf_random_forest$variable4 <- variable4_rf
-big_rf_random_forest$variable5 <- variable5_rf
-big_rf_random_forest <- big_rf_random_forest %>%
-  select(nameOfRun, everything())
-
-big_rf_random_forest$FalseNegative <- random_forest_random_forest_variables_trues_falses[1,2]
-big_rf_random_forest$FalsePositive <- random_forest_random_forest_variables_trues_falses[2,1]
-
-results_for_each_ML_algorithm <- rbind(results_for_each_ML_algorithm, big_rf_random_forest)
-
-
-
-
-
-
-
-#knn ridge regression
-knn_ridge_variables <-  train(response ~.,
-                  df_of_important_variables_and_their_columns_ridge,
-              method = "knn",
-              trControl = ctrl,
-              tuneLength = 20,
-              metric = "Accuracy")
-
-
-
-
-preds_knn_ridge_variables <- predict(knn_ridge_variables, SpinaleProteinsAndResponses_test)
-results_knn_ridge_variables <- confusionMatrix(preds_knn_ridge_variables, SpinaleProteinsAndResponses_test$response)
-results_knn_ridge_1 <- as.matrix(results_knn_ridge_variables)
-results_knn_ridge_2 <- as.matrix(results_knn_ridge_variables, what = "overall")
-results_knn_ridge_3 <- as.matrix(results_knn_ridge_variables, what = "classes")
-
-knn_ridge_variables_trues_falses <- as.data.frame(results_knn_ridge_1)
-
-knn_ridge_variables_accuracy_numbers <- as.data.frame(results_knn_ridge_2)
-knn_ridge_variables_accuracy_numbers = t(knn_ridge_variables_accuracy_numbers)
-knn_ridge_variables_accuracy_numbers <- as.data.frame(knn_ridge_variables_accuracy_numbers)
-
-knn_ridge_variables_precision_recall_F1 <- as.data.frame(results_knn_ridge_3)
-knn_ridge_variables_precision_recall_F1 = t(knn_ridge_variables_precision_recall_F1)
-knn_ridge_variables_precision_recall_F1 <- as.data.frame(knn_ridge_variables_precision_recall_F1)
-
-big_knn_ridge = merge(knn_ridge_variables_accuracy_numbers,knn_ridge_variables_precision_recall_F1)
-big_knn_ridge$nameOfRun <- "k-nearest-neighbors with ridge predictors"
-big_knn_ridge$variable1 <- variable1_ridge
-big_knn_ridge$variable2 <- variable2_ridge
-big_knn_ridge$variable3 <- variable3_ridge
-big_knn_ridge$variable4 <- variable4_ridge
-big_knn_ridge$variable5 <- variable5_ridge
-big_knn_ridge <- big_knn_ridge %>%
-  select(nameOfRun, everything())
-
-big_knn_ridge$FalseNegative <- random_forest_ridge_variables_trues_falses[1,2]
-big_knn_ridge$FalsePositive <- random_forest_ridge_variables_trues_falses[2,1]
-
-results_for_each_ML_algorithm <- rbind(results_for_each_ML_algorithm, big_knn_ridge)
-
-
-
-
-
-
-
-
-
-
-#knn lasso predictors
-knn_lasso_variables <-  train(response ~.,
-                df_of_important_variables_and_their_columns_lasso,
-              method = "knn",
-              trControl = ctrl,
-              tuneLength = 20,
-              metric = "Accuracy")
-
-
-knn_lasso_variables
-
-
-preds_knn_lasso_variables <- predict(knn_lasso_variables, SpinaleProteinsAndResponses_test)
-results_knn_lasso_variables <- confusionMatrix(preds_knn_lasso_variables, SpinaleProteinsAndResponses_test$response)
-results_knn_lasso_1 <- as.matrix(results_knn_lasso_variables)
-results_knn_lasso_2 <- as.matrix(results_knn_lasso_variables, what = "overall")
-results_knn_lasso_3 <- as.matrix(results_knn_lasso_variables, what = "classes")
-
-knn_lasso_variables_trues_falses <- as.data.frame(results_knn_lasso_1)
-
-knn_lasso_variables_accuracy_numbers <- as.data.frame(results_knn_lasso_2)
-knn_lasso_variables_accuracy_numbers = t(knn_lasso_variables_accuracy_numbers)
-knn_lasso_variables_accuracy_numbers <- as.data.frame(knn_lasso_variables_accuracy_numbers)
-
-knn_lasso_variables_precision_recall_F1 <- as.data.frame(results_knn_lasso_3)
-knn_lasso_variables_precision_recall_F1 = t(knn_lasso_variables_precision_recall_F1)
-knn_lasso_variables_precision_recall_F1 <- as.data.frame(knn_lasso_variables_precision_recall_F1)
-
-big_knn_lasso = merge(knn_lasso_variables_accuracy_numbers,knn_lasso_variables_precision_recall_F1)
-big_knn_lasso$nameOfRun <- "k nearest neighbors with lasso predictors"
-big_knn_lasso$variable1 <- variable1_lasso
-big_knn_lasso$variable2 <- variable2_lasso
-big_knn_lasso$variable3 <- variable3_lasso
-big_knn_lasso$variable4 <- variable4_lasso
-big_knn_lasso$variable5 <- variable5_lasso
-big_knn_lasso <- big_knn_lasso %>%
-  select(nameOfRun, everything())
-
-big_knn_lasso$FalseNegative <- knn_lasso_variables_trues_falses[1,2]
-big_knn_lasso$FalsePositive <- knn_lasso_variables_trues_falses[2,1]
-
-results_for_each_ML_algorithm <- rbind(results_for_each_ML_algorithm, big_knn_lasso)
-
-
-
-
-
-
-
-
-#knn with random forest predictors
-knn_random_forest_variables <-  train(response~.,
-                              df_of_important_variables_and_their_columns_random_forest,
-                              method = "knn",
-                              trControl = ctrl,
-                              tuneLength = 20,
-                              metric = "Accuracy")
-
-knn_random_forest_variables
-
-preds_knn_random_forest_variables <- predict(knn_random_forest_variables, SpinaleProteinsAndResponses_test)
-results_knn_random_forest_variables <- confusionMatrix(preds_knn_random_forest_variables, SpinaleProteinsAndResponses_test$response)
-results_knn_random_forest_1 <- as.matrix(results_knn_random_forest_variables)
-results_knn_random_forest_2 <- as.matrix(results_knn_random_forest_variables, what = "overall")
-results_knn_random_forest_3 <- as.matrix(results_knn_random_forest_variables, what = "classes")
-
-knn_random_forest_variables_trues_falses <- as.data.frame(results_knn_random_forest_1)
-
-knn_random_forest_variables_accuracy_numbers <- as.data.frame(results_knn_random_forest_2)
-knn_random_forest_variables_accuracy_numbers = t(knn_random_forest_variables_accuracy_numbers)
-knn_random_forest_variables_accuracy_numbers <- as.data.frame(knn_random_forest_variables_accuracy_numbers)
-
-knn_random_forest_variables_precision_recall_F1 <- as.data.frame(results_knn_random_forest_3)
-knn_random_forest_variables_precision_recall_F1 = t(knn_random_forest_variables_precision_recall_F1)
-knn_random_forest_variables_precision_recall_F1 <- as.data.frame(knn_random_forest_variables_precision_recall_F1)
-
-big_knn_random_forest = merge(knn_random_forest_variables_accuracy_numbers,knn_random_forest_variables_precision_recall_F1)
-big_knn_random_forest$nameOfRun <- "k nearest neighbors with random forest predictors"
-big_knn_random_forest$variable1 <- variable1_rf
-big_knn_random_forest$variable2 <- variable2_rf
-big_knn_random_forest$variable3 <- variable3_rf
-big_knn_random_forest$variable4 <- variable4_rf
-big_knn_random_forest$variable5 <- variable5_rf
-big_knn_random_forest <- big_knn_random_forest %>%
-  select(nameOfRun, everything())
-
-big_knn_random_forest$FalseNegative <- knn_random_forest_variables_trues_falses[1,2]
-big_knn_random_forest$FalsePositive <- knn_random_forest_variables_trues_falses[2,1]
-
-results_for_each_ML_algorithm <- rbind(results_for_each_ML_algorithm, big_knn_random_forest)
-
-
-
-
-
-
-
-
-#logistic regression with ridge regression predictors
-logistic_regression_ridge_variables <- train(response ~.,
-                      data = df_of_important_variables_and_their_columns_ridge,
-                      family = "binomial",
-                      method = "glm",
-                      trControl = ctrl,
-                      metric = "Accuracy")
-
-logistic_regression_ridge_variables
-
-
-preds_logistic_regression_ridge_variables <- predict(logistic_regression_ridge_variables, SpinaleProteinsAndResponses_test)
-results_logistic_regression_ridge_variables <- confusionMatrix(preds_logistic_regression_ridge_variables, SpinaleProteinsAndResponses_test$response)
-results_logistic_regression_ridge_1 <- as.matrix(results_logistic_regression_ridge_variables)
-results_logistic_regression_ridge_2 <- as.matrix(results_logistic_regression_ridge_variables, what = "overall")
-results_logistic_regression_ridge_3 <- as.matrix(results_logistic_regression_ridge_variables, what = "classes")
-
-logistic_regression_ridge_variables_trues_falses <- as.data.frame(results_logistic_regression_ridge_1)
-
-logistic_regression_ridge_variables_accuracy_numbers <- as.data.frame(results_logistic_regression_ridge_2)
-logistic_regression_ridge_variables_accuracy_numbers = t(logistic_regression_ridge_variables_accuracy_numbers)
-logistic_regression_ridge_variables_accuracy_numbers <- as.data.frame(logistic_regression_ridge_variables_accuracy_numbers)
-
-logistic_regression_ridge_variables_precision_recall_F1 <- as.data.frame(results_logistic_regression_ridge_3)
-logistic_regression_ridge_variables_precision_recall_F1 = t(logistic_regression_ridge_variables_precision_recall_F1)
-logistic_regression_ridge_variables_precision_recall_F1 <- as.data.frame(logistic_regression_ridge_variables_precision_recall_F1)
-
-big_logistic_regression_ridge = merge(logistic_regression_ridge_variables_accuracy_numbers,logistic_regression_ridge_variables_precision_recall_F1)
-big_logistic_regression_ridge$nameOfRun <- "logistic regression with ridge predictors"
-big_logistic_regression_ridge$variable1 <- variable1_ridge
-big_logistic_regression_ridge$variable2 <- variable2_ridge
-big_logistic_regression_ridge$variable3 <- variable3_ridge
-big_logistic_regression_ridge$variable4 <- variable4_ridge
-big_logistic_regression_ridge$variable5 <- variable5_ridge
-big_logistic_regression_ridge <- big_logistic_regression_ridge %>%
-  select(nameOfRun, everything())
-
-big_logistic_regression_ridge$FalseNegative <- logistic_regression_ridge_variables_trues_falses[1,2]
-big_logistic_regression_ridge$FalsePositive <- logistic_regression_ridge_variables_trues_falses[2,1]
-
-results_for_each_ML_algorithm <- rbind(results_for_each_ML_algorithm, big_logistic_regression_ridge)
-
-
-
-
-
-
-
-
-
-
-
-#logistic regression with lasso predictors
-logistic_regression_lasso_variables <- train(response ~.,
-                             data = df_of_important_variables_and_their_columns_lasso,
-                             family = "binomial",
-                             method = "glm",
+for (i in 1:50)
+{
+  Spinale_all_variables <- Spinale_all_standardized[sample(nrow(Spinale_all_standardized)),]
+  
+  indexes_all_variables <- createDataPartition(Spinale_all_variables$response,
+                                               times = 1,
+                                               p = 0.8,
+                                               list = FALSE)
+  
+  Spinale_all_train <- Spinale_all_variables[indexes_all_variables,]
+  Spinale_all_test <- Spinale_all_variables[-indexes_all_variables,]
+  
+  
+  #random forest variables
+  rf_predictors_All <- train(response ~.,
+                             Spinale_all_train,
+                             method = "rf",
                              trControl = ctrl,
+                             tuneLength = 21,
                              metric = "Accuracy")
+  
+  
+  plot(varImp(rf_predictors_All, scale = TRUE))
+  
+  imps_rf_all <- as.data.frame(rf_predictors_All$coefnames)
+  important_variables_rf_all <- cbind(imps_rf_all, varImp(rf_predictors_All)$importance)
+  
+  important_variables_rf_all %>% arrange(desc(Overall))
+  
+  important_variables_over_60_rf_all <- important_variables_rf_all %>%
+    filter(Overall >= 60) %>% arrange(desc(Overall))
+  
+  
+  variables_all <- merge(data.frame(variables_all, row.names=NULL), data.frame(important_variables_over_60_rf_all, row.names=NULL), by = 0, all = TRUE)[-1]
+  
+  
+  
+  #lasso variables
+  lasso_variables_all <- train(response ~.,
+                               Spinale_all_train,
+                               family = "binomial",
+                               method = "glmnet",
+                               tuneGrid = expand.grid(alpha = 1,
+                                                      lambda = seq(0.0000001, 0.2, length = 20)),
+                               trControl = ctrl)
+  
+  
+  plot(varImp(lasso_variables_all, scale = TRUE))
+  
+  imps_lasso_all <- as.data.frame(lasso_variables_all$coefnames)
+  
+  important_variables_lasso_all <- cbind(imps_lasso_all, varImp(lasso_variables_all)$importance)
+  
+  important_variables_lasso_all %>% arrange(desc(Overall))
+  
+  important_variables_over_60_lasso_all <- important_variables_lasso_all %>%
+    filter(Overall >= 60) %>% arrange(desc(Overall))
+  
+  
+  variables_all <- merge(data.frame(variables_all, row.names=NULL), data.frame(important_variables_over_60_lasso_all, row.names=NULL), by = 0, all = TRUE)[-1]
+  
+  
+  
+}
 
-logistic_regression_lasso_variables
-
-preds_logistic_regression_lasso_variables <- predict(logistic_regression_lasso_variables, SpinaleProteinsAndResponses_test)
-results_logistic_regression_lasso_variables <- confusionMatrix(preds_logistic_regression_lasso_variables, SpinaleProteinsAndResponses_test$response)
-results_logistic_regression_lasso_1 <- as.matrix(results_logistic_regression_lasso_variables)
-results_logistic_regression_lasso_2 <- as.matrix(results_logistic_regression_lasso_variables, what = "overall")
-results_logistic_regression_lasso_3 <- as.matrix(results_logistic_regression_lasso_variables, what = "classes")
-
-logistic_regression_lasso_variables_trues_falses <- as.data.frame(results_logistic_regression_lasso_1)
-
-logistic_regression_lasso_variables_accuracy_numbers <- as.data.frame(results_logistic_regression_lasso_2)
-logistic_regression_lasso_variables_accuracy_numbers = t(logistic_regression_lasso_variables_accuracy_numbers)
-logistic_regression_lasso_variables_accuracy_numbers <- as.data.frame(logistic_regression_lasso_variables_accuracy_numbers)
-
-logistic_regression_lasso_variables_precision_recall_F1 <- as.data.frame(results_logistic_regression_lasso_3)
-logistic_regression_lasso_variables_precision_recall_F1 = t(logistic_regression_lasso_variables_precision_recall_F1)
-logistic_regression_lasso_variables_precision_recall_F1 <- as.data.frame(logistic_regression_lasso_variables_precision_recall_F1)
-
-big_logistic_regression_lasso = merge(logistic_regression_lasso_variables_accuracy_numbers,logistic_regression_lasso_variables_precision_recall_F1)
-big_logistic_regression_lasso$nameOfRun <- "logistic regression with lasso predictors"
-big_logistic_regression_lasso$variable1 <- variable1_lasso
-big_logistic_regression_lasso$variable2 <- variable2_lasso
-big_logistic_regression_lasso$variable3 <- variable3_lasso
-big_logistic_regression_lasso$variable4 <- variable4_lasso
-big_logistic_regression_lasso$variable5 <- variable5_lasso
-big_logistic_regression_lasso <- big_logistic_regression_lasso %>%
-  select(nameOfRun, everything())
-
-big_logistic_regression_lasso$FalseNegative <- logistic_regression_lasso_variables_trues_falses[1,2]
-big_logistic_regression_lasso$FalsePositive <- logistic_regression_lasso_variables_trues_falses[2,1]
-
-results_for_each_ML_algorithm <- rbind(results_for_each_ML_algorithm, big_logistic_regression_lasso)
 
 
+#------------------------------------------------------------------------------
+indexes_for_final_biochemical <- createDataPartition(SpinaleProteinsAndResponses2$response,
+                                         times = 1,
+                                         p = 0.7,
+                                         list = FALSE)
+
+Spinale_biochemical_training <- SpinaleProteinsAndResponses2[indexes_for_final_biochemical,]
+Spinale_biochemical_test <- SpinaleProteinsAndResponses2[-indexes_for_final_biochemical,]
+
+grid <- expand.grid(C = c(2 ** -10, 2 ** -9, 2 ** -8, 2 ** -7, 2 ** -6, 2 ** -5, 2 ** -4, 2 ** -3, 2 ** -2, 2 ** -1, 2 ** 0, 
+                          2, 2 ** 2, 2 ** 3, 2 ** 4, 2 ** 5, 2 ** 6, 2 ** 7, 2 **8, 2 ** 9, 2 ** 10))
+
+grid_radial <- expand.grid(sigma = c(2 ** -10, 2 ** -9, 2 ** -8, 2 ** -7, 2 ** -6, 2 ** -5, 2 ** -4, 2 ** -3, 2 ** -2, 2 ** -1, 2 ** 0, 
+                                     2, 2 ** 2, 2 ** 3, 2 ** 4, 2 ** 5, 2 ** 6, 2 ** 7, 2 **8, 2 ** 9, 2 ** 10),
+                           C = c(2 ** -10, 2 ** -9, 2 ** -8, 2 ** -7, 2 ** -6, 2 ** -5, 2 ** -4, 2 ** -3, 2 ** -2, 2 ** -1, 2 ** 0, 
+                                 2, 2 ** 2, 2 ** 3, 2 ** 4, 2 ** 5, 2 ** 6, 2 ** 7, 2 **8, 2 ** 9, 2 ** 10))
 
 
+#all the biochemical variables first -- random forest, logistic regression,
+#knn, linear SVM then radial SVM
+
+#first 10-fold CV
+Spinale_biochemical_training_1 <- Spinale_biochemical_training[sample(nrow(Spinale_biochemical_training)),]
+
+#RANDOM FOREST
+randomForest_all_variables_1 <- train(response~.,
+                          Spinale_biochemical_training_1,
+                    method = "rf",
+                    trControl = ctrl,
+                    tuneLength = 12,
+                    ntrees = 1000,
+                    metric = "Accuracy")
 
 
+randomForest_all_variables_results_1 <- as.data.frame(randomForest_all_variables_1$results)
 
-#logistic regression with random forest predictors
-logistic_regression_random_forest_variables <- train(response ~.,
-                                             data = df_of_important_variables_and_their_columns_random_forest,
+randomForest_allVariables_maxAccuracies <- randomForest_all_variables_results_1 %>%
+    filter(Accuracy == max(Accuracy))
+
+#LOGISTIC REGRESSION
+logisticRegression_allVariables_10FoldCV_1 <- train(response ~.,
+                                             data = Spinale_biochemical_training_1,
                                              family = "binomial",
                                              method = "glm",
                                              trControl = ctrl,
                                              metric = "Accuracy")
 
-logistic_regression_random_forest_variables
+logisticRegression_all_variables_results_1 <- as.data.frame(logisticRegression_allVariables_10FoldCV_1$results)
 
-preds_logistic_regression_random_forest_variables <- predict(logistic_regression_random_forest_variables, SpinaleProteinsAndResponses_test)
-results_logistic_regression_random_forest_variables <- confusionMatrix(preds_logistic_regression_random_forest_variables, SpinaleProteinsAndResponses_test$response)
-results_logistic_regression_random_forest_1 <- as.matrix(results_logistic_regression_random_forest_variables)
-results_logistic_regression_random_forest_2 <- as.matrix(results_logistic_regression_random_forest_variables, what = "overall")
-results_logistic_regression_random_forest_3 <- as.matrix(results_logistic_regression_random_forest_variables, what = "classes")
+logisticRegression_all_variables_results <- logisticRegression_all_variables_results_1
 
-logistic_regression_random_forest_variables_trues_falses <- as.data.frame(results_logistic_regression_random_forest_1)
+#K-NEAREST NEIGHBORS
+KNN_all_variables_10FOLDCV_1 <-  train(response~.,
+                                     Spinale_biochemical_training_1,
+                              method = "knn",
+                              trControl = ctrl,
+                              tuneLength = 20,
+                              metric = "Accuracy")
 
-logistic_regression_random_forest_variables_accuracy_numbers <- as.data.frame(results_logistic_regression_random_forest_2)
-logistic_regression_random_forest_variables_accuracy_numbers = t(logistic_regression_random_forest_variables_accuracy_numbers)
-logistic_regression_random_forest_variables_accuracy_numbers <- as.data.frame(logistic_regression_random_forest_variables_accuracy_numbers)
+KNN_all_variables_results_10FOLDCV_1 <- as.data.frame(KNN_all_variables_10FOLDCV_1$results)
 
-logistic_regression_random_forest_variables_precision_recall_F1 <- as.data.frame(results_logistic_regression_random_forest_3)
-logistic_regression_random_forest_variables_precision_recall_F1 = t(logistic_regression_random_forest_variables_precision_recall_F1)
-logistic_regression_random_forest_variables_precision_recall_F1 <- as.data.frame(logistic_regression_random_forest_variables_precision_recall_F1)
+KNN_allVariables_10FOLDCVmaxAccuracies <- KNN_all_variables_results_10FOLDCV_1 %>%
+  filter(Accuracy == max(Accuracy))
 
-big_logistic_regression_random_forest = merge(logistic_regression_random_forest_variables_accuracy_numbers,logistic_regression_random_forest_variables_precision_recall_F1)
-big_logistic_regression_random_forest$nameOfRun <- "logistic regression with random forest predictors"
-big_logistic_regression_random_forest$variable1 <- variable1_rf
-big_logistic_regression_random_forest$variable2 <- variable2_rf
-big_logistic_regression_random_forest$variable3 <- variable3_rf
-big_logistic_regression_random_forest$variable4 <- variable4_rf
-big_logistic_regression_random_forest$variable5 <- variable5_rf
-big_logistic_regression_random_forest <- big_logistic_regression_random_forest %>%
-  select(nameOfRun, everything())
-
-big_logistic_regression_random_forest$FalseNegative <- logistic_regression_random_forest_variables_trues_falses[1,2]
-big_logistic_regression_random_forest$FalsePositive <- logistic_regression_random_forest_variables_trues_falses[2,1]
-
-results_for_each_ML_algorithm <- rbind(results_for_each_ML_algorithm, big_logistic_regression_random_forest)
-
-
-
-
-
-
-
-#SVM for ridge predictors
-
-grid <- expand.grid(C = c(0, 0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 5))
-SVM_ridge_variables <- train(response ~.,
-                            df_of_important_variables_and_their_columns_ridge,
-                            method = "svmLinear",
-                            trControl = ctrl,
-                            tuneGrid = grid,
-                            tuneLength = 10,
-                            metric = "Accuracy")
-
-
-preds_svm_ridge_variables <- predict(SVM_ridge_variables, SpinaleProteinsAndResponses_test)
-results_svm_ridge_variables <- confusionMatrix(preds_svm_ridge_variables, SpinaleProteinsAndResponses_test$response)
-results_svm_ridge_1 <- as.matrix(results_svm_ridge_variables)
-results_svm_ridge_2 <- as.matrix(results_svm_ridge_variables, what = "overall")
-results_svm_ridge_3 <- as.matrix(results_svm_ridge_variables, what = "classes")
-
-svm_ridge_variables_trues_falses <- as.data.frame(results_svm_ridge_1)
-
-svm_ridge_variables_accuracy_numbers <- as.data.frame(results_svm_ridge_2)
-svm_ridge_variables_accuracy_numbers = t(svm_ridge_variables_accuracy_numbers)
-svm_ridge_variables_accuracy_numbers <- as.data.frame(svm_ridge_variables_accuracy_numbers)
-
-svm_ridge_variables_precision_recall_F1 <- as.data.frame(results_svm_ridge_3)
-svm_ridge_variables_precision_recall_F1 = t(svm_ridge_variables_precision_recall_F1)
-svm_ridge_variables_precision_recall_F1 <- as.data.frame(svm_ridge_variables_precision_recall_F1)
-
-big_svm_ridge = merge(svm_ridge_variables_accuracy_numbers,svm_ridge_variables_precision_recall_F1)
-big_svm_ridge$nameOfRun <- "SVM with ridge predictors"
-big_svm_ridge$variable1 <- variable1_ridge
-big_svm_ridge$variable2 <- variable2_ridge
-big_svm_ridge$variable3 <- variable3_ridge
-big_svm_ridge$variable4 <- variable4_ridge
-big_svm_ridge$variable5 <- variable5_ridge
-big_svm_ridge <- big_svm_ridge %>%
-  select(nameOfRun, everything())
-
-big_svm_ridge$FalseNegative <- svm_ridge_variables_trues_falses[1,2]
-big_svm_ridge$FalsePositive <- svm_ridge_variables_trues_falses[2,1]
-
-results_for_each_ML_algorithm <- rbind(results_for_each_ML_algorithm, big_svm_ridge)
-
-#SVM with lasso predictors
-#logistic regression with lasso predictors
-SVM_ridge_variables <- train(response ~.,
-                             df_of_important_variables_and_their_columns_lasso,
-                             method = "svmLinear",
-                             trControl = ctrl,
-                             tuneGrid = grid,
-                             tuneLength = 10,
-                             metric = "Accuracy")
-SVM_ridge_variables
-
-preds_SVM_lasso_variables <- predict(SVM_ridge_variables, SpinaleProteinsAndResponses_test)
-results_SVM_lasso_variables <- confusionMatrix(preds_SVM_lasso_variables, SpinaleProteinsAndResponses_test$response)
-results_SVM_lasso_1 <- as.matrix(results_SVM_lasso_variables)
-results_SVM_lasso_2 <- as.matrix(results_SVM_lasso_variables, what = "overall")
-results_SVM_lasso_3 <- as.matrix(results_SVM_lasso_variables, what = "classes")
-
-SVM_lasso_variables_trues_falses <- as.data.frame(results_SVM_lasso_1)
-
-SVM_lasso_variables_accuracy_numbers <- as.data.frame(results_SVM_lasso_2)
-SVM_lasso_variables_accuracy_numbers = t(SVM_lasso_variables_accuracy_numbers)
-SVM_lasso_variables_accuracy_numbers <- as.data.frame(SVM_lasso_variables_accuracy_numbers)
-
-SVM_lasso_variables_precision_recall_F1 <- as.data.frame(results_SVM_lasso_3)
-SVM_lasso_variables_precision_recall_F1 = t(SVM_lasso_variables_precision_recall_F1)
-SVM_lasso_variables_precision_recall_F1 <- as.data.frame(SVM_lasso_variables_precision_recall_F1)
-
-big_SVM_lasso = merge(SVM_lasso_variables_accuracy_numbers,SVM_lasso_variables_precision_recall_F1)
-big_SVM_lasso$nameOfRun <- "SVM with lasso predictors"
-big_SVM_lasso$variable1 <- variable1_lasso
-big_SVM_lasso$variable2 <- variable2_lasso
-big_SVM_lasso$variable3 <- variable3_lasso
-big_SVM_lasso$variable4 <- variable4_lasso
-big_SVM_lasso$variable5 <- variable5_lasso
-big_SVM_lasso <- big_SVM_lasso %>%
-  select(nameOfRun, everything())
-
-big_SVM_lasso$FalseNegative <- SVM_lasso_variables_trues_falses[1,2]
-big_SVM_lasso$FalsePositive <- SVM_lasso_variables_trues_falses[2,1]
-
-results_for_each_ML_algorithm <- rbind(results_for_each_ML_algorithm, big_SVM_lasso)
-
-
-
-#svm for random forest predictors
-SVM_random_forest_variables <- train(response ~.,
-                             df_of_important_variables_and_their_columns_random_forest,
+#LINEAR SVM
+LinearSVM_all_variables_10FOLDCV_1 <- train(response~.,
+                             Spinale_biochemical_training_1,
                              method = "svmLinear",
                              trControl = ctrl,
                              tuneGrid = grid,
                              tuneLength = 10,
                              metric = "Accuracy")
 
-SVM_random_forest_variables
+LinearSVM_all_variables_results_10FOLDCV_1 <- as.data.frame(LinearSVM_all_variables_10FOLDCV_1$results)
 
-preds_SVM_random_forest_variables <- predict(SVM_random_forest_variables, SpinaleProteinsAndResponses_test)
-results_SVM_random_forest_variables <- confusionMatrix(preds_SVM_random_forest_variables, SpinaleProteinsAndResponses_test$response)
-results_SVM_random_forest_1 <- as.matrix(results_SVM_random_forest_variables)
-results_SVM_random_forest_2 <- as.matrix(results_SVM_random_forest_variables, what = "overall")
-results_SVM_random_forest_3 <- as.matrix(results_SVM_random_forest_variables, what = "classes")
+LinearSVM_allVariables_10FOLDCVmaxAccuracies <- LinearSVM_all_variables_results_10FOLDCV_1 %>%
+  filter(Accuracy == max(Accuracy))
 
-SVM_random_forest_variables_trues_falses <- as.data.frame(results_SVM_random_forest_1)
+#RADIAL SVM
+RadialSVM_all_variables_10FOLDCV_1 <- train(response ~.,
+                                            Spinale_biochemical_training_1,
+                                    method = "svmRadial",
+                                    trControl = ctrl,
+                                    tuneGrid = grid_radial,
+                                    tuneLength = 10,
+                                    metric = "Accuracy")
 
-SVM_random_forest_variables_accuracy_numbers <- as.data.frame(results_SVM_random_forest_2)
-SVM_random_forest_variables_accuracy_numbers = t(SVM_random_forest_variables_accuracy_numbers)
-SVM_random_forest_variables_accuracy_numbers <- as.data.frame(SVM_random_forest_variables_accuracy_numbers)
+RadialSVM_all_variables_results_10FOLDCV_1 <- as.data.frame(RadialSVM_all_variables_10FOLDCV_1$results)
 
-SVM_random_forest_variables_precision_recall_F1 <- as.data.frame(results_SVM_random_forest_3)
-SVM_random_forest_variables_precision_recall_F1 = t(SVM_random_forest_variables_precision_recall_F1)
-SVM_random_forest_variables_precision_recall_F1 <- as.data.frame(SVM_random_forest_variables_precision_recall_F1)
-
-big_SVM_random_forest = merge(SVM_random_forest_variables_accuracy_numbers,SVM_random_forest_variables_precision_recall_F1)
-big_SVM_random_forest$nameOfRun <- "SVM with random forest predictors"
-big_SVM_random_forest$variable1 <- variable1_rf
-big_SVM_random_forest$variable2 <- variable2_rf
-big_SVM_random_forest$variable3 <- variable3_rf
-big_SVM_random_forest$variable4 <- variable4_rf
-big_SVM_random_forest$variable5 <- variable5_rf
-big_SVM_random_forest <- big_SVM_random_forest %>%
-  select(nameOfRun, everything())
-
-big_SVM_random_forest$FalseNegative <- SVM_random_forest_variables_trues_falses[1,2]
-big_SVM_random_forest$FalsePositive <- SVM_random_forest_variables_trues_falses[2,1]
-
-results_for_each_ML_algorithm <- rbind(results_for_each_ML_algorithm, big_SVM_random_forest)
+RadialSVM_allVariables_10FOLDCVmaxAccuracies <- RadialSVM_all_variables_results_10FOLDCV_1 %>%
+  filter(Accuracy == max(Accuracy))
 
 
+#second 10-fold CV
+Spinale_biochemical_training_2 <- Spinale_biochemical_training[sample(nrow(Spinale_biochemical_training)),]
+
+#RANDOM FOREST
+randomForest_all_variables_2 <- train(response~.,
+                                      Spinale_biochemical_training_2,
+                                      method = "rf",
+                                      trControl = ctrl,
+                                      tuneLength = 12,
+                                      ntrees = 1000,
+                                      metric = "Accuracy")
 
 
-}
+randomForest_all_variables_results_2 <- as.data.frame(randomForest_all_variables_2$results)
+
+randomForest_allVariables_maxAccuracies2 <- randomForest_all_variables_results_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_allVariables_maxAccuracies <- rbind(randomForest_allVariables_maxAccuracies, 
+                                                 randomForest_allVariables_maxAccuracies2)
+
+#LOGISTIC REGRESSION
+logisticRegression_allVariables_10FoldCV_2 <- train(response ~.,
+                                                    data = Spinale_biochemical_training_2,
+                                                    family = "binomial",
+                                                    method = "glm",
+                                                    trControl = ctrl,
+                                                    metric = "Accuracy")
+
+logisticRegression_all_variables_results_2 <- as.data.frame(logisticRegression_allVariables_10FoldCV_2$results)
+
+logisticRegression_all_variables_results <- rbind(logisticRegression_all_variables_results,
+                                                  logisticRegression_all_variables_results_2)
+
+#K-NEAREST NEIGHBORS
+
+KNN_all_variables_10FOLDCV_2 <-  train(response~.,
+                                       Spinale_biochemical_training_2,
+                                       method = "knn",
+                                       trControl = ctrl,
+                                       tuneLength = 20,
+                                       metric = "Accuracy")
+
+KNN_all_variables_results_10FOLDCV_2 <- as.data.frame(KNN_all_variables_10FOLDCV_2$results)
+
+KNN_allVariables_10FOLDCVmaxAccuracies2 <- KNN_all_variables_results_10FOLDCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_allVariables_10FOLDCVmaxAccuracies <- rbind(KNN_allVariables_10FOLDCVmaxAccuracies, 
+                                                 KNN_allVariables_10FOLDCVmaxAccuracies2)
+
+#LINEAR SVM
+LinearSVM_all_variables_10FOLDCV_2 <- train(response~.,
+                                            Spinale_biochemical_training_2,
+                                            method = "svmLinear",
+                                            trControl = ctrl,
+                                            tuneGrid = grid,
+                                            tuneLength = 10,
+                                            metric = "Accuracy")
+
+LinearSVM_all_variables_results_10FOLDCV_2 <- as.data.frame(LinearSVM_all_variables_10FOLDCV_2$results)
+
+LinearSVM_allVariables_10FOLDCVmaxAccuracies2 <- LinearSVM_all_variables_results_10FOLDCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_allVariables_10FOLDCVmaxAccuracies <- rbind(LinearSVM_allVariables_10FOLDCVmaxAccuracies, 
+                                                      LinearSVM_allVariables_10FOLDCVmaxAccuracies2)
+
+#RADIAL SVM
+RadialSVM_all_variables_10FOLDCV_2 <- train(response ~.,
+                                            Spinale_biochemical_training_2,
+                                            method = "svmRadial",
+                                            trControl = ctrl,
+                                            tuneGrid = grid_radial,
+                                            tuneLength = 10,
+                                            metric = "Accuracy")
+
+RadialSVM_all_variables_results_10FOLDCV_2 <- as.data.frame(RadialSVM_all_variables_10FOLDCV_2$results)
+
+RadialSVM_allVariables_10FOLDCVmaxAccuracies2 <- RadialSVM_all_variables_results_10FOLDCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_allVariables_10FOLDCVmaxAccuracies <- rbind(RadialSVM_allVariables_10FOLDCVmaxAccuracies, 
+                                                      RadialSVM_allVariables_10FOLDCVmaxAccuracies2)
+
+#third 10-fold CV
+Spinale_biochemical_training_3 <- Spinale_biochemical_training[sample(nrow(Spinale_biochemical_training)),]
+
+#RANDOM FOREST
+randomForest_all_variables_3 <- train(response~.,
+                                      Spinale_biochemical_training_3,
+                                      method = "rf",
+                                      trControl = ctrl,
+                                      tuneLength = 12,
+                                      ntrees = 1000,
+                                      metric = "Accuracy")
+
+randomForest_all_variables_results_3 <- as.data.frame(randomForest_all_variables_3$results)
+
+randomForest_allVariables_maxAccuracies3 <- randomForest_all_variables_results_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_allVariables_maxAccuracies <- rbind(randomForest_allVariables_maxAccuracies, 
+                                                 randomForest_allVariables_maxAccuracies3)
+
+#LOGISTIC REGRESSION
+logisticRegression_allVariables_10FoldCV_3 <- train(response ~.,
+                                                    data = Spinale_biochemical_training_3,
+                                                    family = "binomial",
+                                                    method = "glm",
+                                                    trControl = ctrl,
+                                                    metric = "Accuracy")
+
+logisticRegression_all_variables_results_3 <- as.data.frame(logisticRegression_allVariables_10FoldCV_3$results)
+
+logisticRegression_all_variables_results <- rbind(logisticRegression_all_variables_results,
+                                                  logisticRegression_all_variables_results_3)
+
+#K-NEAREST NEIGHBORS
+
+KNN_all_variables_10FOLDCV_3 <-  train(response~.,
+                                       Spinale_biochemical_training_3,
+                                       method = "knn",
+                                       trControl = ctrl,
+                                       tuneLength = 20,
+                                       metric = "Accuracy")
+
+KNN_all_variables_results_10FOLDCV_3 <- as.data.frame(KNN_all_variables_10FOLDCV_3$results)
+
+KNN_allVariables_10FOLDCVmaxAccuracies3 <- KNN_all_variables_results_10FOLDCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_allVariables_10FOLDCVmaxAccuracies <- rbind(KNN_allVariables_10FOLDCVmaxAccuracies, 
+                                                KNN_allVariables_10FOLDCVmaxAccuracies3)
+
+#LINEAR SVM
+LinearSVM_all_variables_10FOLDCV_3 <- train(response~.,
+                                            Spinale_biochemical_training_3,
+                                            method = "svmLinear",
+                                            trControl = ctrl,
+                                            tuneGrid = grid,
+                                            tuneLength = 10,
+                                            metric = "Accuracy")
+
+LinearSVM_all_variables_results_10FOLDCV_3 <- as.data.frame(LinearSVM_all_variables_10FOLDCV_3$results)
+
+LinearSVM_allVariables_10FOLDCVmaxAccuracies3 <- LinearSVM_all_variables_results_10FOLDCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_allVariables_10FOLDCVmaxAccuracies <- rbind(LinearSVM_allVariables_10FOLDCVmaxAccuracies, 
+                                                      LinearSVM_allVariables_10FOLDCVmaxAccuracies3)
+
+#RADIAL SVM
+RadialSVM_all_variables_10FOLDCV_3 <- train(response ~.,
+                                            Spinale_biochemical_training_3,
+                                            method = "svmRadial",
+                                            trControl = ctrl,
+                                            tuneGrid = grid_radial,
+                                            tuneLength = 10,
+                                            metric = "Accuracy")
+
+RadialSVM_all_variables_results_10FOLDCV_3 <- as.data.frame(RadialSVM_all_variables_10FOLDCV_3$results)
+
+RadialSVM_allVariables_10FOLDCVmaxAccuracies3 <- RadialSVM_all_variables_results_10FOLDCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_allVariables_10FOLDCVmaxAccuracies <- rbind(RadialSVM_allVariables_10FOLDCVmaxAccuracies, 
+                                                      RadialSVM_allVariables_10FOLDCVmaxAccuracies3)
+
+#fourth 10-fold CV
+Spinale_biochemical_training_4 <- Spinale_biochemical_training[sample(nrow(Spinale_biochemical_training)),]
+
+#RANDOM FOREST
+randomForest_all_variables_4 <- train(response~.,
+                                      Spinale_biochemical_training_4,
+                                      method = "rf",
+                                      trControl = ctrl,
+                                      tuneLength = 12,
+                                      ntrees = 1000,
+                                      metric = "Accuracy")
+
+randomForest_all_variables_results_4 <- as.data.frame(randomForest_all_variables_4$results)
+
+randomForest_allVariables_maxAccuracies4 <- randomForest_all_variables_results_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_allVariables_maxAccuracies <- rbind(randomForest_allVariables_maxAccuracies, 
+                                                 randomForest_allVariables_maxAccuracies4)
+
+#LOGISTIC REGRESSION
+logisticRegression_allVariables_10FoldCV_4 <- train(response ~.,
+                                                    data = Spinale_biochemical_training_4,
+                                                    family = "binomial",
+                                                    method = "glm",
+                                                    trControl = ctrl,
+                                                    metric = "Accuracy")
+
+logisticRegression_all_variables_results_4 <- as.data.frame(logisticRegression_allVariables_10FoldCV_4$results)
+
+logisticRegression_all_variables_results <- rbind(logisticRegression_all_variables_results,
+                                                  logisticRegression_all_variables_results_4)
+
+#K-NEAREST NEIGHBORS
+KNN_all_variables_10FOLDCV_4 <-  train(response~.,
+                                       Spinale_biochemical_training_4,
+                                       method = "knn",
+                                       trControl = ctrl,
+                                       tuneLength = 20,
+                                       metric = "Accuracy")
+
+KNN_all_variables_results_10FOLDCV_4 <- as.data.frame(KNN_all_variables_10FOLDCV_4$results)
+
+KNN_allVariables_10FOLDCVmaxAccuracies4 <- KNN_all_variables_results_10FOLDCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_allVariables_10FOLDCVmaxAccuracies <- rbind(KNN_allVariables_10FOLDCVmaxAccuracies, 
+                                                KNN_allVariables_10FOLDCVmaxAccuracies4)
+
+#LINEAR SVM
+LinearSVM_all_variables_10FOLDCV_4 <- train(response~.,
+                                            Spinale_biochemical_training_4,
+                                            method = "svmLinear",
+                                            trControl = ctrl,
+                                            tuneGrid = grid,
+                                            tuneLength = 10,
+                                            metric = "Accuracy")
+
+LinearSVM_all_variables_results_10FOLDCV_4 <- as.data.frame(LinearSVM_all_variables_10FOLDCV_4$results)
+
+LinearSVM_allVariables_10FOLDCVmaxAccuracies4 <- LinearSVM_all_variables_results_10FOLDCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_allVariables_10FOLDCVmaxAccuracies <- rbind(LinearSVM_allVariables_10FOLDCVmaxAccuracies, 
+                                                      LinearSVM_allVariables_10FOLDCVmaxAccuracies4)
+
+#RADIAL SVM
+RadialSVM_all_variables_10FOLDCV_4 <- train(response ~.,
+                                            Spinale_biochemical_training_4,
+                                            method = "svmRadial",
+                                            trControl = ctrl,
+                                            tuneGrid = grid_radial,
+                                            tuneLength = 10,
+                                            metric = "Accuracy")
+
+RadialSVM_all_variables_results_10FOLDCV_4 <- as.data.frame(RadialSVM_all_variables_10FOLDCV_4$results)
+
+RadialSVM_allVariables_10FOLDCVmaxAccuracies4 <- RadialSVM_all_variables_results_10FOLDCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_allVariables_10FOLDCVmaxAccuracies <- rbind(RadialSVM_allVariables_10FOLDCVmaxAccuracies, 
+                                                      RadialSVM_allVariables_10FOLDCVmaxAccuracies4)
+
+#fifth 10-fold CV
+Spinale_biochemical_training_5 <- Spinale_biochemical_training[sample(nrow(Spinale_biochemical_training)),]
+
+#RANDOM FOREST
+randomForest_all_variables_5 <- train(response~.,
+                                      Spinale_biochemical_training_5,
+                                      method = "rf",
+                                      trControl = ctrl,
+                                      tuneLength = 12,
+                                      ntrees = 1000,
+                                      metric = "Accuracy")
+
+randomForest_all_variables_results_5 <- as.data.frame(randomForest_all_variables_5$results)
+
+randomForest_allVariables_maxAccuracies5 <- randomForest_all_variables_results_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_allVariables_maxAccuracies <- rbind(randomForest_allVariables_maxAccuracies, 
+                                                 randomForest_allVariables_maxAccuracies5)
+
+#LOGISTIC REGRESSION
+logisticRegression_allVariables_10FoldCV_5 <- train(response ~.,
+                                                    data = Spinale_biochemical_training_5,
+                                                    family = "binomial",
+                                                    method = "glm",
+                                                    trControl = ctrl,
+                                                    metric = "Accuracy")
+
+logisticRegression_all_variables_results_5 <- as.data.frame(logisticRegression_allVariables_10FoldCV_5$results)
+
+logisticRegression_all_variables_results <- rbind(logisticRegression_all_variables_results,
+                                                  logisticRegression_all_variables_results_5)
+
+#K-NEAREST NEIGHBORS
+KNN_all_variables_10FOLDCV_5 <-  train(response~.,
+                                       Spinale_biochemical_training_5,
+                                       method = "knn",
+                                       trControl = ctrl,
+                                       tuneLength = 20,
+                                       metric = "Accuracy")
+
+KNN_all_variables_results_10FOLDCV_5 <- as.data.frame(KNN_all_variables_10FOLDCV_5$results)
+
+KNN_allVariables_10FOLDCVmaxAccuracies5 <- KNN_all_variables_results_10FOLDCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_allVariables_10FOLDCVmaxAccuracies <- rbind(KNN_allVariables_10FOLDCVmaxAccuracies, 
+                                                KNN_allVariables_10FOLDCVmaxAccuracies5)
+
+#LINEAR SVM
+LinearSVM_all_variables_10FOLDCV_5 <- train(response~.,
+                                            Spinale_biochemical_training_5,
+                                            method = "svmLinear",
+                                            trControl = ctrl,
+                                            tuneGrid = grid,
+                                            tuneLength = 10,
+                                            metric = "Accuracy")
+
+LinearSVM_all_variables_results_10FOLDCV_5 <- as.data.frame(LinearSVM_all_variables_10FOLDCV_5$results)
+
+LinearSVM_allVariables_10FOLDCVmaxAccuracies5 <- LinearSVM_all_variables_results_10FOLDCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_allVariables_10FOLDCVmaxAccuracies <- rbind(LinearSVM_allVariables_10FOLDCVmaxAccuracies, 
+                                                      LinearSVM_allVariables_10FOLDCVmaxAccuracies5)
+#RADIAL SVM
+RadialSVM_all_variables_10FOLDCV_5 <- train(response ~.,
+                                            Spinale_biochemical_training_5,
+                                            method = "svmRadial",
+                                            trControl = ctrl,
+                                            tuneGrid = grid_radial,
+                                            tuneLength = 10,
+                                            metric = "Accuracy")
+
+RadialSVM_all_variables_results_10FOLDCV_5 <- as.data.frame(RadialSVM_all_variables_10FOLDCV_5$results)
+
+RadialSVM_allVariables_10FOLDCVmaxAccuracies5 <- RadialSVM_all_variables_results_10FOLDCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_allVariables_10FOLDCVmaxAccuracies <- rbind(RadialSVM_allVariables_10FOLDCVmaxAccuracies, 
+                                                      RadialSVM_allVariables_10FOLDCVmaxAccuracies5)
+
+#-----------------------------------------------------------------------------------------
+#now let's do 5 5-fold CVs 
+Spinale_biochemical_training_5FoldCV_1 <- Spinale_biochemical_training[sample(nrow(Spinale_biochemical_training)),]
+
+#RANDOM FOREST
+randomForest_all_variables_5FoldCV_1 <- train(response~.,
+                                        Spinale_biochemical_training_5FoldCV_1,
+                                      method = "rf",
+                                      trControl = ctrl_5_fold_CV,
+                                      tuneLength = 12,
+                                      ntrees = 1000,
+                                      metric = "Accuracy")
 
 
-stopCluster(cl)
+randomForest_all_variables_results_5FoldCV_1 <- as.data.frame(randomForest_all_variables_5FoldCV_1$results)
 
-ridgeResults <- results_for_each_ML_algorithm %>%
-    filter(grepl('ridge predictors', nameOfRun)) %>%
-  mutate(meanAccuracy = mean(Accuracy), meanPrecision = mean(Precision), 
-         meanRecall = mean(Recall), meanF1 = mean(F1))
+randomForest_allVariables_maxAccuracies_5FoldCV <- randomForest_all_variables_results_5FoldCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#LOGISTIC REGRESSION
+logisticRegression_allVariables_5FoldCV_1 <- train(response ~.,
+                                                    data = Spinale_biochemical_training_5FoldCV_1,
+                                                    family = "binomial",
+                                                    method = "glm",
+                                                    trControl = ctrl_5_fold_CV,
+                                                    metric = "Accuracy")
+
+logisticRegression_all_variables_5FOLDCV_results_1 <- as.data.frame(logisticRegression_allVariables_5FoldCV_1$results)
+
+logisticRegression_all_variables_results_5FOLDCV <- logisticRegression_all_variables_5FOLDCV_results_1
+
+#K-NEAREST NEIGHBORS
+KNN_all_variables_5FOLDCV_1 <-  train(response~.,
+                                      Spinale_biochemical_training_5FoldCV_1,
+                                       method = "knn",
+                                       trControl = ctrl_5_fold_CV,
+                                       tuneLength = 20,
+                                       metric = "Accuracy")
+
+KNN_all_variables_results_5FOLDCV_1 <- as.data.frame(KNN_all_variables_5FOLDCV_1$results)
+
+KNN_allVariables_5FOLDCVmaxAccuracies <- KNN_all_variables_results_5FOLDCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#LINEAR SVM
+LinearSVM_all_variables_5FOLDCV_1 <- train(response~.,
+                                           Spinale_biochemical_training_5FoldCV_1,
+                                            method = "svmLinear",
+                                            trControl = ctrl_5_fold_CV,
+                                            tuneGrid = grid,
+                                            tuneLength = 10,
+                                            metric = "Accuracy")
+
+LinearSVM_all_variables_results_5FOLDCV_1 <- as.data.frame(LinearSVM_all_variables_5FOLDCV_1$results)
+
+LinearSVM_allVariables_5FOLDCVmaxAccuracies <- LinearSVM_all_variables_results_5FOLDCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#RADIAL SVM
+RadialSVM_all_variables_5FOLDCV_1 <- train(response ~.,
+                                           Spinale_biochemical_training_5FoldCV_1,
+                                            method = "svmRadial",
+                                            trControl = ctrl_5_fold_CV,
+                                            tuneGrid = grid_radial,
+                                            tuneLength = 10,
+                                            metric = "Accuracy")
+
+RadialSVM_all_variables_results_5FOLDCV_1 <- as.data.frame(RadialSVM_all_variables_5FOLDCV_1$results)
+
+RadialSVM_allVariables_5FOLDCVmaxAccuracies <- RadialSVM_all_variables_results_5FOLDCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#second 5-fold CV
+Spinale_biochemical_training_5FoldCV_2 <- Spinale_biochemical_training[sample(nrow(Spinale_biochemical_training)),]
+
+#RANDOM FOREST
+randomForest_all_variables_5FoldCV_2 <- train(response~.,
+                                      Spinale_biochemical_training_5FoldCV_2,
+                                      method = "rf",
+                                      trControl = ctrl_5_fold_CV,
+                                      tuneLength = 12,
+                                      ntrees = 1000,
+                                      metric = "Accuracy")
 
 
-lassoResults <- results_for_each_ML_algorithm %>%
-  filter(grepl('lasso predictors', nameOfRun)) %>%
-    mutate(meanAccuracy = mean(Accuracy), meanPrecision = mean(Precision), 
-           meanRecall = mean(Recall), meanF1 = mean(F1))
+randomForest_all_variables_results_5FoldCV_2 <- as.data.frame(randomForest_all_variables_5FoldCV_2$results)
+
+randomForest_allVariables_maxAccuracies_5FoldCV_2 <- randomForest_all_variables_results_5FoldCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_allVariables_maxAccuracies_5FoldCV <- rbind(randomForest_allVariables_maxAccuracies_5FoldCV, 
+                                                         randomForest_allVariables_maxAccuracies_5FoldCV_2)
+
+#LOGISTIC REGRESSION
+logisticRegression_allVariables_5FoldCV_2 <- train(response ~.,
+                                                    data = Spinale_biochemical_training_5FoldCV_2,
+                                                    family = "binomial",
+                                                    method = "glm",
+                                                    trControl = ctrl_5_fold_CV,
+                                                    metric = "Accuracy")
+
+logisticRegression_all_variables_5FOLDCV_results_2 <- as.data.frame(logisticRegression_allVariables_5FoldCV_2$results)
+
+logisticRegression_all_variables_results_5FOLDCV <- rbind(logisticRegression_all_variables_results_5FOLDCV,
+                                                  logisticRegression_all_variables_5FOLDCV_results_2)
+
+#K-NEAREST NEIGHBORS
+KNN_all_variables_5FOLDCV_2 <-  train(response~.,
+                                      Spinale_biochemical_training_5FoldCV_2,
+                                       method = "knn",
+                                       trControl = ctrl_5_fold_CV,
+                                       tuneLength = 20,
+                                       metric = "Accuracy")
+
+KNN_all_variables_results_5FOLDCV_2 <- as.data.frame(KNN_all_variables_5FOLDCV_2$results)
+
+KNN_allVariables_5FOLDCVmaxAccuracies2 <- KNN_all_variables_results_5FOLDCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_allVariables_5FOLDCVmaxAccuracies <- rbind(KNN_allVariables_5FOLDCVmaxAccuracies, 
+                                               KNN_allVariables_5FOLDCVmaxAccuracies2)
+
+#LINEAR SVM
+LinearSVM_all_variables_5FOLDCV_2 <- train(response~.,
+                                           Spinale_biochemical_training_5FoldCV_2,
+                                            method = "svmLinear",
+                                            trControl = ctrl_5_fold_CV,
+                                            tuneGrid = grid,
+                                            tuneLength = 10,
+                                            metric = "Accuracy")
+
+LinearSVM_all_variables_results_5FOLDCV_2 <- as.data.frame(LinearSVM_all_variables_5FOLDCV_2$results)
+
+LinearSVM_allVariables_5FOLDCVmaxAccuracies2 <- LinearSVM_all_variables_results_5FOLDCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_allVariables_5FOLDCVmaxAccuracies <- rbind(LinearSVM_allVariables_5FOLDCVmaxAccuracies, 
+                                                      LinearSVM_allVariables_5FOLDCVmaxAccuracies2)
+
+#RADIAL SVM
+RadialSVM_all_variables_5FOLDCV_2 <- train(response~.,
+                                           Spinale_biochemical_training_5FoldCV_2,
+                                           method = "svmRadial",
+                                           trControl = ctrl_5_fold_CV,
+                                           tuneGrid = grid_radial,
+                                           tuneLength = 10,
+                                           metric = "Accuracy")
+
+RadialSVM_all_variables_results_5FOLDCV_2 <- as.data.frame(RadialSVM_all_variables_5FOLDCV_2$results)
+
+RadialSVM_allVariables_5FOLDCVmaxAccuracies2 <- RadialSVM_all_variables_results_5FOLDCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_allVariables_5FOLDCVmaxAccuracies <- rbind(RadialSVM_allVariables_5FOLDCVmaxAccuracies, 
+                                                     RadialSVM_allVariables_5FOLDCVmaxAccuracies2)
+
+#third 5-fold CV
+
+Spinale_biochemical_training_5FoldCV_3 <- Spinale_biochemical_training[sample(nrow(Spinale_biochemical_training)),]
+
+#RANDOM FOREST
+randomForest_all_variables_5FoldCV_3 <- train(response~.,
+                                              Spinale_biochemical_training_5FoldCV_3,
+                                              method = "rf",
+                                              trControl = ctrl_5_fold_CV,
+                                              tuneLength = 12,
+                                              ntrees = 1000,
+                                              metric = "Accuracy")
 
 
-randomForestResults <- results_for_each_ML_algorithm %>%
-  filter(grepl('random forest predictors', nameOfRun)) %>%
-  mutate(meanAccuracy = mean(Accuracy), meanPrecision = mean(Precision), 
-         meanRecall = mean(Recall), meanF1 = mean(F1))
+randomForest_all_variables_results_5FoldCV_3 <- as.data.frame(randomForest_all_variables_5FoldCV_3$results)
 
-logisticRegressionResults <- results_for_each_ML_algorithm %>%
-  filter(grepl('logistic regression', nameOfRun)) %>%
-  mutate(meanAccuracy = mean(Accuracy), meanPrecision = mean(Precision), 
-         meanRecall = mean(Recall), meanF1 = mean(F1))
+randomForest_allVariables_maxAccuracies_5FoldCV_3 <- randomForest_all_variables_results_5FoldCV_3 %>%
+  filter(Accuracy == max(Accuracy))
 
-SVMResults <- results_for_each_ML_algorithm %>%
-  filter(grepl('SVM', nameOfRun)) %>%
-  mutate(meanAccuracy = mean(Accuracy), meanPrecision = mean(Precision), 
-         meanRecall = mean(Recall), meanF1 = mean(F1))
+randomForest_allVariables_maxAccuracies_5FoldCV <- rbind(randomForest_allVariables_maxAccuracies_5FoldCV, 
+                                                         randomForest_allVariables_maxAccuracies_5FoldCV_3)
 
-knnResults <- results_for_each_ML_algorithm %>%
-  filter(grepl('neighbors', nameOfRun)) %>%
-  mutate(meanAccuracy = mean(Accuracy), meanPrecision = mean(Precision), 
-         meanRecall = mean(Recall), meanF1 = mean(F1))
+#LOGISTIC REGRESSION
+logisticRegression_allVariables_5FoldCV_3 <- train(response ~.,
+                                                   data = Spinale_biochemical_training_5FoldCV_3,
+                                                   family = "binomial",
+                                                   method = "glm",
+                                                   trControl = ctrl_5_fold_CV,
+                                                   metric = "Accuracy")
 
-randomForestResults1 <- results_for_each_ML_algorithm %>%
-  filter(grepl('random forest with', nameOfRun)) %>%
-  mutate(meanAccuracy = mean(Accuracy), meanPrecision = mean(Precision), 
-         meanRecall = mean(Recall), meanF1 = mean(F1))
+logisticRegression_all_variables_5FOLDCV_results_3 <- as.data.frame(logisticRegression_allVariables_5FoldCV_3$results)
+
+logisticRegression_all_variables_results_5FOLDCV <- rbind(logisticRegression_all_variables_results_5FOLDCV,
+                                                          logisticRegression_all_variables_5FOLDCV_results_3)
+
+#K-NEAREST NEIGHBORS
+KNN_all_variables_5FOLDCV_3 <-  train(response~.,
+                                      Spinale_biochemical_training_5FoldCV_3,
+                                      method = "knn",
+                                      trControl = ctrl_5_fold_CV,
+                                      tuneLength = 20,
+                                      metric = "Accuracy")
+
+KNN_all_variables_results_5FOLDCV_3 <- as.data.frame(KNN_all_variables_5FOLDCV_3$results)
+
+KNN_allVariables_5FOLDCVmaxAccuracies3 <- KNN_all_variables_results_5FOLDCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_allVariables_5FOLDCVmaxAccuracies <- rbind(KNN_allVariables_5FOLDCVmaxAccuracies, 
+                                               KNN_allVariables_5FOLDCVmaxAccuracies3)
+#LINEAR SVM
+LinearSVM_all_variables_5FOLDCV_3 <- train(response~.,
+                                           Spinale_biochemical_training_5FoldCV_3,
+                                           method = "svmLinear",
+                                           trControl = ctrl_5_fold_CV,
+                                           tuneGrid = grid,
+                                           tuneLength = 10,
+                                           metric = "Accuracy")
+
+LinearSVM_all_variables_results_5FOLDCV_3 <- as.data.frame(LinearSVM_all_variables_5FOLDCV_3$results)
+
+LinearSVM_allVariables_5FOLDCVmaxAccuracies3 <- LinearSVM_all_variables_results_5FOLDCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_allVariables_5FOLDCVmaxAccuracies <- rbind(LinearSVM_allVariables_5FOLDCVmaxAccuracies, 
+                                                     LinearSVM_allVariables_5FOLDCVmaxAccuracies3)
+
+#RADIAL SVM
+RadialSVM_all_variables_5FOLDCV_3 <- train(response~.,
+                                           Spinale_biochemical_training_5FoldCV_3,
+                                           method = "svmRadial",
+                                           trControl = ctrl_5_fold_CV,
+                                           tuneGrid = grid_radial,
+                                           tuneLength = 10,
+                                           metric = "Accuracy")
+
+RadialSVM_all_variables_results_5FOLDCV_3 <- as.data.frame(RadialSVM_all_variables_5FOLDCV_3$results)
+
+RadialSVM_allVariables_5FOLDCVmaxAccuracies3 <- RadialSVM_all_variables_results_5FOLDCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_allVariables_5FOLDCVmaxAccuracies <- rbind(RadialSVM_allVariables_5FOLDCVmaxAccuracies, 
+                                                     RadialSVM_allVariables_5FOLDCVmaxAccuracies3)
+
+
+#fourth 5-CV 
+Spinale_biochemical_training_5FoldCV_4 <- Spinale_biochemical_training[sample(nrow(Spinale_biochemical_training)),]
+
+#RANDOM FOREST
+randomForest_all_variables_5FoldCV_4 <- train(response~.,
+                                              Spinale_biochemical_training_5FoldCV_4,
+                                              method = "rf",
+                                              trControl = ctrl_5_fold_CV,
+                                              tuneLength = 12,
+                                              ntrees = 1000,
+                                              metric = "Accuracy")
+
+
+randomForest_all_variables_results_5FoldCV_4 <- as.data.frame(randomForest_all_variables_5FoldCV_4$results)
+
+randomForest_allVariables_maxAccuracies_5FoldCV_4 <- randomForest_all_variables_results_5FoldCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_allVariables_maxAccuracies_5FoldCV <- rbind(randomForest_allVariables_maxAccuracies_5FoldCV, 
+                                                         randomForest_allVariables_maxAccuracies_5FoldCV_4)
+
+#LOGISTIC REGRESSION
+logisticRegression_allVariables_5FoldCV_4 <- train(response ~.,
+                                                   data = Spinale_biochemical_training_5FoldCV_4,
+                                                   family = "binomial",
+                                                   method = "glm",
+                                                   trControl = ctrl_5_fold_CV,
+                                                   metric = "Accuracy")
+
+logisticRegression_all_variables_5FOLDCV_results_4 <- as.data.frame(logisticRegression_allVariables_5FoldCV_4$results)
+
+logisticRegression_all_variables_results_5FOLDCV <- rbind(logisticRegression_all_variables_results_5FOLDCV,
+                                                          logisticRegression_all_variables_5FOLDCV_results_4)
+
+#K-NEAREST NEIGHBORS
+KNN_all_variables_5FOLDCV_4 <-  train(response~.,
+                                      Spinale_biochemical_training_5FoldCV_4,
+                                      method = "knn",
+                                      trControl = ctrl_5_fold_CV,
+                                      tuneLength = 20,
+                                      metric = "Accuracy")
+
+KNN_all_variables_results_5FOLDCV_4 <- as.data.frame(KNN_all_variables_5FOLDCV_4$results)
+
+KNN_allVariables_5FOLDCVmaxAccuracies4 <- KNN_all_variables_results_5FOLDCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_allVariables_5FOLDCVmaxAccuracies <- rbind(KNN_allVariables_5FOLDCVmaxAccuracies, 
+                                               KNN_allVariables_5FOLDCVmaxAccuracies4)
+
+#LINEAR SVM
+LinearSVM_all_variables_5FOLDCV_4 <- train(response~.,
+                                           Spinale_biochemical_training_5FoldCV_4,
+                                           method = "svmLinear",
+                                           trControl = ctrl_5_fold_CV,
+                                           tuneGrid = grid,
+                                           tuneLength = 10,
+                                           metric = "Accuracy")
+
+LinearSVM_all_variables_results_5FOLDCV_4 <- as.data.frame(LinearSVM_all_variables_5FOLDCV_4$results)
+
+LinearSVM_allVariables_5FOLDCVmaxAccuracies4 <- LinearSVM_all_variables_results_5FOLDCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_allVariables_5FOLDCVmaxAccuracies <- rbind(LinearSVM_allVariables_5FOLDCVmaxAccuracies, 
+                                                     LinearSVM_allVariables_5FOLDCVmaxAccuracies4)
+
+#RADIAL SVM
+RadialSVM_all_variables_5FOLDCV_4 <- train(response~.,
+                                           Spinale_biochemical_training_5FoldCV_4,
+                                           method = "svmRadial",
+                                           trControl = ctrl_5_fold_CV,
+                                           tuneGrid = grid_radial,
+                                           tuneLength = 10,
+                                           metric = "Accuracy")
+
+RadialSVM_all_variables_results_5FOLDCV_4 <- as.data.frame(RadialSVM_all_variables_5FOLDCV_4$results)
+
+RadialSVM_allVariables_5FOLDCVmaxAccuracies4 <- RadialSVM_all_variables_results_5FOLDCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_allVariables_5FOLDCVmaxAccuracies <- rbind(RadialSVM_allVariables_5FOLDCVmaxAccuracies, 
+                                                     RadialSVM_allVariables_5FOLDCVmaxAccuracies4)
+
+#fifth 10-CV
+Spinale_biochemical_training_5FoldCV_5 <- Spinale_biochemical_training[sample(nrow(Spinale_biochemical_training)),]
+
+#RANDOM FOREST
+randomForest_all_variables_5FoldCV_5 <- train(response~.,
+                                              Spinale_biochemical_training_5FoldCV_5,
+                                              method = "rf",
+                                              trControl = ctrl_5_fold_CV,
+                                              tuneLength = 12,
+                                              ntrees = 1000,
+                                              metric = "Accuracy")
+
+
+randomForest_all_variables_results_5FoldCV_5 <- as.data.frame(randomForest_all_variables_5FoldCV_5$results)
+
+randomForest_allVariables_maxAccuracies_5FoldCV_5 <- randomForest_all_variables_results_5FoldCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_allVariables_maxAccuracies_5FoldCV <- rbind(randomForest_allVariables_maxAccuracies_5FoldCV, 
+                                                         randomForest_allVariables_maxAccuracies_5FoldCV_5)
+
+#LOGISTIC REGRESSION
+logisticRegression_allVariables_5FoldCV_5 <- train(response ~.,
+                                                   data = Spinale_biochemical_training_5FoldCV_5,
+                                                   family = "binomial",
+                                                   method = "glm",
+                                                   trControl = ctrl_5_fold_CV,
+                                                   metric = "Accuracy")
+
+logisticRegression_all_variables_5FOLDCV_results_5 <- as.data.frame(logisticRegression_allVariables_5FoldCV_5$results)
+
+logisticRegression_all_variables_results_5FOLDCV <- rbind(logisticRegression_all_variables_results_5FOLDCV,
+                                                          logisticRegression_all_variables_5FOLDCV_results_5)
+
+#K-NEAREST NEIGHBORS
+KNN_all_variables_5FOLDCV_5 <-  train(response~.,
+                                      Spinale_biochemical_training_5FoldCV_5,
+                                      method = "knn",
+                                      trControl = ctrl_5_fold_CV,
+                                      tuneLength = 20,
+                                      metric = "Accuracy")
+
+KNN_all_variables_results_5FOLDCV_5 <- as.data.frame(KNN_all_variables_5FOLDCV_5$results)
+
+KNN_allVariables_5FOLDCVmaxAccuracies5 <- KNN_all_variables_results_5FOLDCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_allVariables_5FOLDCVmaxAccuracies <- rbind(KNN_allVariables_5FOLDCVmaxAccuracies, 
+                                               KNN_allVariables_5FOLDCVmaxAccuracies5)
+
+#LINEAR SVM
+LinearSVM_all_variables_5FOLDCV_5 <- train(response~.,
+                                           Spinale_biochemical_training_5FoldCV_5,
+                                           method = "svmLinear",
+                                           trControl = ctrl_5_fold_CV,
+                                           tuneGrid = grid,
+                                           tuneLength = 10,
+                                           metric = "Accuracy")
+
+LinearSVM_all_variables_results_5FOLDCV_5 <- as.data.frame(LinearSVM_all_variables_5FOLDCV_5$results)
+
+LinearSVM_allVariables_5FOLDCVmaxAccuracies5 <- LinearSVM_all_variables_results_5FOLDCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_allVariables_5FOLDCVmaxAccuracies <- rbind(LinearSVM_allVariables_5FOLDCVmaxAccuracies, 
+                                                     LinearSVM_allVariables_5FOLDCVmaxAccuracies5)
+
+#RADIAL SVM
+RadialSVM_all_variables_5FOLDCV_5 <- train(response~.,
+                                           Spinale_biochemical_training_5FoldCV_5,
+                                           method = "svmRadial",
+                                           trControl = ctrl_5_fold_CV,
+                                           tuneGrid = grid_radial,
+                                           tuneLength = 10,
+                                           metric = "Accuracy")
+
+RadialSVM_all_variables_results_5FOLDCV_5 <- as.data.frame(RadialSVM_all_variables_5FOLDCV_5$results)
+
+RadialSVM_allVariables_5FOLDCVmaxAccuracies5 <- RadialSVM_all_variables_results_5FOLDCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_allVariables_5FOLDCVmaxAccuracies <- rbind(RadialSVM_allVariables_5FOLDCVmaxAccuracies, 
+                                                     RadialSVM_allVariables_5FOLDCVmaxAccuracies5)
+
+#----------------------------------------------------------------------------
+#----------------------------------------------------------------------------
+
+#now we do 10 fold and 5 fold CV for the base variables (MMP2, CRP, ST2, TIFRII)
+
+#first 10-fold CV
+Spinale_biochemical_training_baseVariables_1 <- Spinale_biochemical_training[sample(nrow(Spinale_biochemical_training)),]
+
+#RANDOM FOREST
+randomForest_base_variables_10FOLDCV_1 <- train(response~ MMP2_standardized + CRP_standardized + 
+                                         ST2_standardized + TIFRII_standardized,
+                                       Spinale_biochemical_training_baseVariables_1,
+                                      method = "rf",
+                                      trControl = ctrl,
+                                      tuneLength = 4,
+                                      ntrees = 1000,
+                                      metric = "Accuracy")
+
+randomForest_baseVariables_results_10FOLDCV_1 <- as.data.frame(randomForest_base_variables_10FOLDCV_1$results)
+
+randomForest_baseVariables_maxAccuracies_10FOLDCV <- randomForest_baseVariables_results_10FOLDCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#LOGISTIC REGRESSION
+logisticRegression_baseVariables_10FoldCV_1 <- train(response ~MMP2_standardized + CRP_standardized + 
+                                                       ST2_standardized + TIFRII_standardized,
+                                                    data = Spinale_biochemical_training_baseVariables_1,
+                                                    family = "binomial",
+                                                    method = "glm",
+                                                    trControl = ctrl,
+                                                    metric = "Accuracy")
+
+logisticRegression_baseVariables_results_10FOLDCV_1 <- as.data.frame(logisticRegression_baseVariables_10FoldCV_1$results)
+
+logisticRegression_baseVariables_results_10FOLDCV <- logisticRegression_baseVariables_results_10FOLDCV_1
+
+#K-NEAREST NEIGHBORS
+KNN_baseVariables_10FoldCV_1 <-  train(response ~MMP2_standardized + CRP_standardized + 
+                                         ST2_standardized + TIFRII_standardized,
+                                       data = Spinale_biochemical_training_baseVariables_1,
+                                       method = "knn",
+                                       trControl = ctrl,
+                                       tuneLength = 20,
+                                       metric = "Accuracy")
+
+KNN_baseVariables_results_10FOLDCV_1 <- as.data.frame(KNN_baseVariables_10FoldCV_1$results)
+
+KNN_baseVariables_maxAccuracies_10FOLDCV <- KNN_baseVariables_results_10FOLDCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#LINEAR SVM
+LinearSVM_baseVariables_10FOLDCV_1 <- train(response~MMP2_standardized + CRP_standardized + 
+                                              ST2_standardized + TIFRII_standardized,
+                                            data = Spinale_biochemical_training_baseVariables_1,
+                                            method = "svmLinear",
+                                            trControl = ctrl,
+                                            tuneGrid = grid,
+                                            tuneLength = 10,
+                                            metric = "Accuracy")
+
+LinearSVM_baseVariables_results_10FOLDCV_1 <- as.data.frame(LinearSVM_baseVariables_10FOLDCV_1$results)
+
+LinearSVM_baseVariables_maxAccuracies_10FOLDCV <- LinearSVM_baseVariables_results_10FOLDCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#RADIAL SVM
+RadialSVM_baseVariables_10FOLDCV_1 <- train(response~MMP2_standardized + CRP_standardized + 
+                                              ST2_standardized + TIFRII_standardized,
+                                            data = Spinale_biochemical_training_baseVariables_1,
+                                            method = "svmRadial",
+                                            trControl = ctrl,
+                                            tuneGrid = grid_radial,
+                                            tuneLength = 10,
+                                            metric = "Accuracy")
+
+RadialSVM_baseVariables_results_10FOLDCV_1 <- as.data.frame(RadialSVM_baseVariables_10FOLDCV_1$results)
+
+RadialSVM_baseVariables_maxAccuracies_10FOLDCV <- RadialSVM_baseVariables_results_10FOLDCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#second 10-fold CV
+Spinale_biochemical_training_baseVariables_2 <- Spinale_biochemical_training[sample(nrow(Spinale_biochemical_training)),]
+
+#RANDOM FOREST
+randomForest_base_variables_10FOLDCV_2 <- train(response~MMP2_standardized + CRP_standardized + 
+                                                  ST2_standardized + TIFRII_standardized,
+                                                Spinale_biochemical_training_baseVariables_2,
+                                      method = "rf",
+                                      trControl = ctrl,
+                                      tuneLength = 4,
+                                      ntrees = 1000,
+                                      metric = "Accuracy")
+
+
+randomForest_baseVariables_results_10FOLDCV_2 <- as.data.frame(randomForest_base_variables_10FOLDCV_2$results)
+
+randomForest_allVariables_maxAccuracies2 <- randomForest_baseVariables_results_10FOLDCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_baseVariables_maxAccuracies_10FOLDCV <- rbind(randomForest_baseVariables_maxAccuracies_10FOLDCV, 
+                                                           randomForest_allVariables_maxAccuracies2)
+
+#LOGISTIC REGRESSION
+logisticRegression_baseVariables_10FoldCV_2 <- train(response ~MMP2_standardized + CRP_standardized + 
+                                                       ST2_standardized + TIFRII_standardized,
+                                                    data = Spinale_biochemical_training_baseVariables_2,
+                                                    family = "binomial",
+                                                    method = "glm",
+                                                    trControl = ctrl,
+                                                    metric = "Accuracy")
+
+logisticRegression_basevariables_results_2 <- as.data.frame(logisticRegression_baseVariables_10FoldCV_2$results)
+
+logisticRegression_baseVariables_results_10FOLDCV <- rbind(logisticRegression_baseVariables_results_10FOLDCV,
+                                                  logisticRegression_basevariables_results_2)
+
+#K-NEAREST NEIGHBORS
+
+KNN_baseVariables_10FOLDCV_2 <-  train(response ~MMP2_standardized + CRP_standardized + 
+                                         ST2_standardized + TIFRII_standardized,
+                                       Spinale_biochemical_training_baseVariables_2,
+                                       method = "knn",
+                                       trControl = ctrl,
+                                       tuneLength = 20,
+                                       metric = "Accuracy")
+
+KNN_baseVariables_results_10FOLDCV_2 <- as.data.frame(KNN_baseVariables_10FOLDCV_2$results)
+
+KNN_baseVariables_10FOLDCVmaxAccuracies2 <- KNN_baseVariables_results_10FOLDCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_baseVariables_maxAccuracies_10FOLDCV <- rbind(KNN_baseVariables_maxAccuracies_10FOLDCV, 
+                                                KNN_baseVariables_10FOLDCVmaxAccuracies2)
+
+#LINEAR SVM
+LinearSVM_baseVariables_10FOLDCV_2 <- train(response ~MMP2_standardized + CRP_standardized + 
+                                              ST2_standardized + TIFRII_standardized,
+                                            Spinale_biochemical_training_baseVariables_2,
+                                            method = "svmLinear",
+                                            trControl = ctrl,
+                                            tuneGrid = grid,
+                                            tuneLength = 10,
+                                            metric = "Accuracy")
+
+LinearSVM_baseVariables_results_10FOLDCV_2 <- as.data.frame(LinearSVM_baseVariables_10FOLDCV_2$results)
+
+LinearSVM_baseVariables_10FOLDCVmaxAccuracies2 <- LinearSVM_baseVariables_results_10FOLDCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_baseVariables_maxAccuracies_10FOLDCV <- rbind(LinearSVM_baseVariables_maxAccuracies_10FOLDCV, 
+                                                      LinearSVM_baseVariables_10FOLDCVmaxAccuracies2)
+
+#RADIAL SVM
+RadialSVM_baseVariables_10FOLDCV_2 <- train(response~MMP2_standardized + CRP_standardized + 
+                                              ST2_standardized + TIFRII_standardized,
+                                            Spinale_biochemical_training_baseVariables_2,
+                                            method = "svmRadial",
+                                            trControl = ctrl,
+                                            tuneGrid = grid_radial,
+                                            tuneLength = 10,
+                                            metric = "Accuracy")
+
+RadialSVM_baseVariables_results_10FOLDCV_2 <- as.data.frame(RadialSVM_baseVariables_10FOLDCV_2$results)
+
+RadialSVM_baseVariables_10FOLDCVmaxAccuracies2 <- RadialSVM_baseVariables_results_10FOLDCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_baseVariables_maxAccuracies_10FOLDCV <- rbind(RadialSVM_baseVariables_maxAccuracies_10FOLDCV, 
+                                                      RadialSVM_baseVariables_10FOLDCVmaxAccuracies2)
+
+#third 10-fold CV
+Spinale_biochemical_training_baseVariables_3 <- Spinale_biochemical_training[sample(nrow(Spinale_biochemical_training)),]
+
+#RANDOM FOREST
+randomForest_base_variables_10FOLDCV_3 <- train(response~MMP2_standardized + CRP_standardized + 
+                                                  ST2_standardized + TIFRII_standardized,
+                                                Spinale_biochemical_training_baseVariables_3,
+                                                method = "rf",
+                                                trControl = ctrl,
+                                                tuneLength = 4,
+                                                ntrees = 1000,
+                                                metric = "Accuracy")
+
+
+randomForest_baseVariables_results_10FOLDCV_3 <- as.data.frame(randomForest_base_variables_10FOLDCV_3$results)
+
+randomForest_allVariables_maxAccuracies3 <- randomForest_baseVariables_results_10FOLDCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_baseVariables_maxAccuracies_10FOLDCV <- rbind(randomForest_baseVariables_maxAccuracies_10FOLDCV, 
+                                                           randomForest_allVariables_maxAccuracies3)
+
+#LOGISTIC REGRESSION
+logisticRegression_baseVariables_10FoldCV_3 <- train(response ~MMP2_standardized + CRP_standardized + 
+                                                       ST2_standardized + TIFRII_standardized,
+                                                     data = Spinale_biochemical_training_baseVariables_3,
+                                                     family = "binomial",
+                                                     method = "glm",
+                                                     trControl = ctrl,
+                                                     metric = "Accuracy")
+
+logisticRegression_basevariables_results_3 <- as.data.frame(logisticRegression_baseVariables_10FoldCV_3$results)
+
+logisticRegression_baseVariables_results_10FOLDCV <- rbind(logisticRegression_baseVariables_results_10FOLDCV,
+                                                           logisticRegression_basevariables_results_3)
+
+#K-NEAREST NEIGHBORS
+
+KNN_baseVariables_10FOLDCV_3 <-  train(response ~MMP2_standardized + CRP_standardized + 
+                                         ST2_standardized + TIFRII_standardized,
+                                       Spinale_biochemical_training_baseVariables_3,
+                                       method = "knn",
+                                       trControl = ctrl,
+                                       tuneLength = 20,
+                                       metric = "Accuracy")
+
+KNN_baseVariables_results_10FOLDCV_3 <- as.data.frame(KNN_baseVariables_10FOLDCV_3$results)
+
+KNN_baseVariables_10FOLDCVmaxAccuracies3 <- KNN_baseVariables_results_10FOLDCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_baseVariables_maxAccuracies_10FOLDCV <- rbind(KNN_baseVariables_maxAccuracies_10FOLDCV, 
+                                                  KNN_baseVariables_10FOLDCVmaxAccuracies3)
+
+#LINEAR SVM
+LinearSVM_baseVariables_10FOLDCV_3 <- train(response ~MMP2_standardized + CRP_standardized + 
+                                              ST2_standardized + TIFRII_standardized,
+                                            Spinale_biochemical_training_baseVariables_3,
+                                            method = "svmLinear",
+                                            trControl = ctrl,
+                                            tuneGrid = grid,
+                                            tuneLength = 10,
+                                            metric = "Accuracy")
+
+LinearSVM_baseVariables_results_10FOLDCV_3 <- as.data.frame(LinearSVM_baseVariables_10FOLDCV_3$results)
+
+LinearSVM_baseVariables_10FOLDCVmaxAccuracies3 <- LinearSVM_baseVariables_results_10FOLDCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_baseVariables_maxAccuracies_10FOLDCV <- rbind(LinearSVM_baseVariables_maxAccuracies_10FOLDCV, 
+                                                        LinearSVM_baseVariables_10FOLDCVmaxAccuracies3)
+
+#RADIAL SVM
+RadialSVM_baseVariables_10FOLDCV_3 <- train(response~MMP2_standardized + CRP_standardized + 
+                                              ST2_standardized + TIFRII_standardized,
+                                            Spinale_biochemical_training_baseVariables_3,
+                                            method = "svmRadial",
+                                            trControl = ctrl,
+                                            tuneGrid = grid_radial,
+                                            tuneLength = 10,
+                                            metric = "Accuracy")
+
+RadialSVM_baseVariables_results_10FOLDCV_3 <- as.data.frame(RadialSVM_baseVariables_10FOLDCV_3$results)
+
+RadialSVM_baseVariables_10FOLDCVmaxAccuracies3 <- RadialSVM_baseVariables_results_10FOLDCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_baseVariables_maxAccuracies_10FOLDCV <- rbind(RadialSVM_baseVariables_maxAccuracies_10FOLDCV, 
+                                                        RadialSVM_baseVariables_10FOLDCVmaxAccuracies3)
+
+
+#fourth 10-fold CV
+Spinale_biochemical_training_baseVariables_4 <- Spinale_biochemical_training[sample(nrow(Spinale_biochemical_training)),]
+
+#RANDOM FOREST
+randomForest_base_variables_10FOLDCV_4 <- train(response~MMP2_standardized + CRP_standardized + 
+                                                  ST2_standardized + TIFRII_standardized,
+                                                Spinale_biochemical_training_baseVariables_4,
+                                                method = "rf",
+                                                trControl = ctrl,
+                                                tuneLength = 4,
+                                                ntrees = 1000,
+                                                metric = "Accuracy")
+
+
+randomForest_baseVariables_results_10FOLDCV_4 <- as.data.frame(randomForest_base_variables_10FOLDCV_4$results)
+
+randomForest_allVariables_maxAccuracies4 <- randomForest_baseVariables_results_10FOLDCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_baseVariables_maxAccuracies_10FOLDCV <- rbind(randomForest_baseVariables_maxAccuracies_10FOLDCV, 
+                                                           randomForest_allVariables_maxAccuracies4)
+
+#LOGISTIC REGRESSION
+logisticRegression_baseVariables_10FoldCV_4 <- train(response ~MMP2_standardized + CRP_standardized + 
+                                                       ST2_standardized + TIFRII_standardized,
+                                                     data = Spinale_biochemical_training_baseVariables_4,
+                                                     family = "binomial",
+                                                     method = "glm",
+                                                     trControl = ctrl,
+                                                     metric = "Accuracy")
+
+logisticRegression_basevariables_results_4 <- as.data.frame(logisticRegression_baseVariables_10FoldCV_4$results)
+
+logisticRegression_baseVariables_results_10FOLDCV <- rbind(logisticRegression_baseVariables_results_10FOLDCV,
+                                                           logisticRegression_basevariables_results_4)
+
+#K-NEAREST NEIGHBORS
+
+KNN_baseVariables_10FOLDCV_4 <-  train(response ~MMP2_standardized + CRP_standardized + 
+                                         ST2_standardized + TIFRII_standardized,
+                                       Spinale_biochemical_training_baseVariables_4,
+                                       method = "knn",
+                                       trControl = ctrl,
+                                       tuneLength = 20,
+                                       metric = "Accuracy")
+
+KNN_baseVariables_results_10FOLDCV_4 <- as.data.frame(KNN_baseVariables_10FOLDCV_4$results)
+
+KNN_baseVariables_10FOLDCVmaxAccuracies4 <- KNN_baseVariables_results_10FOLDCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_baseVariables_maxAccuracies_10FOLDCV <- rbind(KNN_baseVariables_maxAccuracies_10FOLDCV, 
+                                                  KNN_baseVariables_10FOLDCVmaxAccuracies4)
+
+#LINEAR SVM
+LinearSVM_baseVariables_10FOLDCV_4 <- train(response ~MMP2_standardized + CRP_standardized + 
+                                              ST2_standardized + TIFRII_standardized,
+                                            Spinale_biochemical_training_baseVariables_4,
+                                            method = "svmLinear",
+                                            trControl = ctrl,
+                                            tuneGrid = grid,
+                                            tuneLength = 10,
+                                            metric = "Accuracy")
+
+LinearSVM_baseVariables_results_10FOLDCV_4 <- as.data.frame(LinearSVM_baseVariables_10FOLDCV_4$results)
+
+LinearSVM_baseVariables_10FOLDCVmaxAccuracies4 <- LinearSVM_baseVariables_results_10FOLDCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_baseVariables_maxAccuracies_10FOLDCV <- rbind(LinearSVM_baseVariables_maxAccuracies_10FOLDCV, 
+                                                        LinearSVM_baseVariables_10FOLDCVmaxAccuracies4)
+
+#RADIAL SVM
+RadialSVM_baseVariables_10FOLDCV_4 <- train(response~MMP2_standardized + CRP_standardized + 
+                                              ST2_standardized + TIFRII_standardized,
+                                            Spinale_biochemical_training_baseVariables_4,
+                                            method = "svmRadial",
+                                            trControl = ctrl,
+                                            tuneGrid = grid_radial,
+                                            tuneLength = 10,
+                                            metric = "Accuracy")
+
+RadialSVM_baseVariables_results_10FOLDCV_4 <- as.data.frame(RadialSVM_baseVariables_10FOLDCV_4$results)
+
+RadialSVM_baseVariables_10FOLDCVmaxAccuracies4 <- RadialSVM_baseVariables_results_10FOLDCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_baseVariables_maxAccuracies_10FOLDCV <- rbind(RadialSVM_baseVariables_maxAccuracies_10FOLDCV, 
+                                                        RadialSVM_baseVariables_10FOLDCVmaxAccuracies4)
+
+
+#fifth 10-fold CV
+Spinale_biochemical_training_baseVariables_5 <- Spinale_biochemical_training[sample(nrow(Spinale_biochemical_training)),]
+
+#RANDOM FOREST
+randomForest_base_variables_10FOLDCV_5 <- train(response~MMP2_standardized + CRP_standardized + 
+                                                  ST2_standardized + TIFRII_standardized,
+                                                Spinale_biochemical_training_baseVariables_5,
+                                                method = "rf",
+                                                trControl = ctrl,
+                                                tuneLength = 4,
+                                                ntrees = 1000,
+                                                metric = "Accuracy")
+
+
+randomForest_baseVariables_results_10FOLDCV_5 <- as.data.frame(randomForest_base_variables_10FOLDCV_5$results)
+
+randomForest_allVariables_maxAccuracies5 <- randomForest_baseVariables_results_10FOLDCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_baseVariables_maxAccuracies_10FOLDCV <- rbind(randomForest_baseVariables_maxAccuracies_10FOLDCV, 
+                                                           randomForest_allVariables_maxAccuracies5)
+
+#LOGISTIC REGRESSION
+logisticRegression_baseVariables_10FoldCV_5 <- train(response ~MMP2_standardized + CRP_standardized + 
+                                                       ST2_standardized + TIFRII_standardized,
+                                                     data = Spinale_biochemical_training_baseVariables_5,
+                                                     family = "binomial",
+                                                     method = "glm",
+                                                     trControl = ctrl,
+                                                     metric = "Accuracy")
+
+logisticRegression_basevariables_results_5 <- as.data.frame(logisticRegression_baseVariables_10FoldCV_5$results)
+
+logisticRegression_baseVariables_results_10FOLDCV <- rbind(logisticRegression_baseVariables_results_10FOLDCV,
+                                                           logisticRegression_basevariables_results_5)
+
+#K-NEAREST NEIGHBORS
+
+KNN_baseVariables_10FOLDCV_5 <-  train(response ~MMP2_standardized + CRP_standardized + 
+                                         ST2_standardized + TIFRII_standardized,
+                                       Spinale_biochemical_training_baseVariables_5,
+                                       method = "knn",
+                                       trControl = ctrl,
+                                       tuneLength = 20,
+                                       metric = "Accuracy")
+
+KNN_baseVariables_results_10FOLDCV_5 <- as.data.frame(KNN_baseVariables_10FOLDCV_5$results)
+
+KNN_baseVariables_10FOLDCVmaxAccuracies5 <- KNN_baseVariables_results_10FOLDCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_baseVariables_maxAccuracies_10FOLDCV <- rbind(KNN_baseVariables_maxAccuracies_10FOLDCV, 
+                                                  KNN_baseVariables_10FOLDCVmaxAccuracies5)
+
+#LINEAR SVM
+LinearSVM_baseVariables_10FOLDCV_5 <- train(response ~MMP2_standardized + CRP_standardized + 
+                                              ST2_standardized + TIFRII_standardized,
+                                            Spinale_biochemical_training_baseVariables_5,
+                                            method = "svmLinear",
+                                            trControl = ctrl,
+                                            tuneGrid = grid,
+                                            tuneLength = 10,
+                                            metric = "Accuracy")
+
+LinearSVM_baseVariables_results_10FOLDCV_5 <- as.data.frame(LinearSVM_baseVariables_10FOLDCV_5$results)
+
+LinearSVM_baseVariables_10FOLDCVmaxAccuracies5 <- LinearSVM_baseVariables_results_10FOLDCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_baseVariables_maxAccuracies_10FOLDCV <- rbind(LinearSVM_baseVariables_maxAccuracies_10FOLDCV, 
+                                                        LinearSVM_baseVariables_10FOLDCVmaxAccuracies5)
+
+#RADIAL SVM
+RadialSVM_baseVariables_10FOLDCV_5 <- train(response~MMP2_standardized + CRP_standardized + 
+                                              ST2_standardized + TIFRII_standardized,
+                                            Spinale_biochemical_training_baseVariables_5,
+                                            method = "svmRadial",
+                                            trControl = ctrl,
+                                            tuneGrid = grid_radial,
+                                            tuneLength = 10,
+                                            metric = "Accuracy")
+
+RadialSVM_baseVariables_results_10FOLDCV_5 <- as.data.frame(RadialSVM_baseVariables_10FOLDCV_5$results)
+
+RadialSVM_baseVariables_10FOLDCVmaxAccuracies5 <- RadialSVM_baseVariables_results_10FOLDCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_baseVariables_maxAccuracies_10FOLDCV <- rbind(RadialSVM_baseVariables_maxAccuracies_10FOLDCV, 
+                                                        RadialSVM_baseVariables_10FOLDCVmaxAccuracies5)
+
+#-----------------------------------------------------------------------------------------
+#now let's do 5 5-fold CVs 
+Spinale_biochemical_training_baseVariables_5FoldCV_1 <- Spinale_biochemical_training[sample(nrow(Spinale_biochemical_training)),]
+
+#RANDOM FOREST
+randomForest_baseVariables_5FoldCV_1 <- train(response~MMP2_standardized + CRP_standardized + 
+                                                ST2_standardized + TIFRII_standardized,
+                                              Spinale_biochemical_training_baseVariables_5FoldCV_1,
+                                              method = "rf",
+                                              trControl = ctrl_5_fold_CV,
+                                              tuneLength = 12,
+                                              ntrees = 1000,
+                                              metric = "Accuracy")
+
+
+randomForest_baseVariables_results_5FoldCV_1 <- as.data.frame(randomForest_baseVariables_5FoldCV_1$results)
+
+randomForest_baseVariables_maxAccuracies_5FoldCV <- randomForest_baseVariables_results_5FoldCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#LOGISTIC REGRESSION
+logisticRegression_baseVariables_5FoldCV_1 <- train(response~MMP2_standardized + CRP_standardized + 
+                                                      ST2_standardized + TIFRII_standardized,
+                                                   data = Spinale_biochemical_training_baseVariables_5FoldCV_1,
+                                                   family = "binomial",
+                                                   method = "glm",
+                                                   trControl = ctrl_5_fold_CV,
+                                                   metric = "Accuracy")
+
+logisticRegression_baseVariables_5FOLDCV_results_1 <- as.data.frame(logisticRegression_baseVariables_5FoldCV_1$results)
+
+logisticRegression_baseVariables_results_5FOLDCV <- logisticRegression_baseVariables_5FOLDCV_results_1
+
+#K-NEAREST NEIGHBORS
+KNN_baseVariables_5FOLDCV_1 <-  train(response~MMP2_standardized + CRP_standardized + 
+                                        ST2_standardized + TIFRII_standardized,
+                                      Spinale_biochemical_training_baseVariables_5FoldCV_1,
+                                      method = "knn",
+                                      trControl = ctrl_5_fold_CV,
+                                      tuneLength = 20,
+                                      metric = "Accuracy")
+
+KNN_baseVariables_results_5FOLDCV_1 <- as.data.frame(KNN_baseVariables_5FOLDCV_1$results)
+
+KNN_baseVariables_5FOLDCVmaxAccuracies <- KNN_baseVariables_results_5FOLDCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#LINEAR SVM
+LinearSVM_baseVariables_5FOLDCV_1 <- train(response~MMP2_standardized + CRP_standardized + 
+                                             ST2_standardized + TIFRII_standardized,
+                                           Spinale_biochemical_training_baseVariables_5FoldCV_1,
+                                           method = "svmLinear",
+                                           trControl = ctrl_5_fold_CV,
+                                           tuneGrid = grid,
+                                           tuneLength = 10,
+                                           metric = "Accuracy")
+
+LinearSVM_baseVariables_results_5FOLDCV_1 <- as.data.frame(LinearSVM_baseVariables_5FOLDCV_1$results)
+
+LinearSVM_baseVariables_5FOLDCVmaxAccuracies <- LinearSVM_baseVariables_results_5FOLDCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#RADIAL SVM
+RadialSVM_baseVariables_5FOLDCV_1 <- train(response ~MMP2_standardized + CRP_standardized + 
+                                             ST2_standardized + TIFRII_standardized,
+                                           Spinale_biochemical_training_baseVariables_5FoldCV_1,
+                                           method = "svmRadial",
+                                           trControl = ctrl_5_fold_CV,
+                                           tuneGrid = grid_radial,
+                                           tuneLength = 10,
+                                           metric = "Accuracy")
+
+RadialSVM_baseVariables_results_5FOLDCV_1 <- as.data.frame(RadialSVM_baseVariables_5FOLDCV_1$results)
+
+RadialSVM_baseVariables_5FOLDCVmaxAccuracies <- RadialSVM_baseVariables_results_5FOLDCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#second 5-fold CV
+Spinale_biochemical_training_baseVariables_5FoldCV_3 <- Spinale_biochemical_training[sample(nrow(Spinale_biochemical_training)),]
+
+#RANDOM FOREST
+randomForest_baseVariables_5FoldCV_3 <- train(response~MMP2_standardized + CRP_standardized + 
+                                                ST2_standardized + TIFRII_standardized,
+                                              Spinale_biochemical_training_baseVariables_5FoldCV_3,
+                                              method = "rf",
+                                              trControl = ctrl_5_fold_CV,
+                                              tuneLength = 4,
+                                              ntrees = 1000,
+                                              metric = "Accuracy")
+
+
+randomForest_baseVariables_results_5FoldCV_3 <- as.data.frame(randomForest_baseVariables_5FoldCV_3$results)
+
+randomForest_baseVariables_maxAccuracies_5FoldCV_3 <- randomForest_baseVariables_results_5FoldCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_baseVariables_maxAccuracies_5FoldCV <- rbind(randomForest_baseVariables_maxAccuracies_5FoldCV, 
+                                                          randomForest_baseVariables_maxAccuracies_5FoldCV_3)
+
+#LOGISTIC REGRESSION
+logisticRegression_baseVariables_5FoldCV_3 <- train(response ~ MMP2_standardized + CRP_standardized + 
+                                                      ST2_standardized + TIFRII_standardized,
+                                                   data = Spinale_biochemical_training_baseVariables_5FoldCV_3,
+                                                   family = "binomial",
+                                                   method = "glm",
+                                                   trControl = ctrl_5_fold_CV,
+                                                   metric = "Accuracy")
+
+logisticRegression_baseVariables_5FOLDCV_results_3 <- as.data.frame(logisticRegression_baseVariables_5FoldCV_3$results)
+
+logisticRegression_baseVariables_results_5FOLDCV <- rbind(logisticRegression_baseVariables_results_5FOLDCV,
+                                                          logisticRegression_baseVariables_5FOLDCV_results_3)
+
+#K-NEAREST NEIGHBORS
+KNN_baseVariables_5FOLDCV_3 <-  train(response ~ MMP2_standardized + CRP_standardized + 
+                                        ST2_standardized + TIFRII_standardized,
+                                      Spinale_biochemical_training_baseVariables_5FoldCV_3,
+                                      method = "knn",
+                                      trControl = ctrl_5_fold_CV,
+                                      tuneLength = 20,
+                                      metric = "Accuracy")
+
+KNN_baseVariables_results_5FOLDCV_3 <- as.data.frame(KNN_baseVariables_5FOLDCV_3$results)
+
+KNN_baseVariables_5FOLDCVmaxAccuracies3 <- KNN_baseVariables_results_5FOLDCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_baseVariables_5FOLDCVmaxAccuracies <- rbind(KNN_baseVariables_5FOLDCVmaxAccuracies, 
+                                                KNN_baseVariables_5FOLDCVmaxAccuracies3)
+
+#LINEAR SVM
+LinearSVM_baseVariables_5FOLDCV_3 <- train(response~.,
+                                           Spinale_biochemical_training_baseVariables_5FoldCV_3,
+                                           method = "svmLinear",
+                                           trControl = ctrl_5_fold_CV,
+                                           tuneGrid = grid,
+                                           tuneLength = 10,
+                                           metric = "Accuracy")
+
+LinearSVM_baseVariables_results_5FOLDCV_3 <- as.data.frame(LinearSVM_baseVariables_5FOLDCV_3$results)
+
+LinearSVM_baseVariables_5FOLDCVmaxAccuracies3 <- LinearSVM_baseVariables_results_5FOLDCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_baseVariables_5FOLDCVmaxAccuracies <- rbind(LinearSVM_baseVariables_5FOLDCVmaxAccuracies, 
+                                                      LinearSVM_baseVariables_5FOLDCVmaxAccuracies3)
+
+#RADIAL SVM
+RadialSVM_baseVariables_5FOLDCV_3 <- train(response~.,
+                                           Spinale_biochemical_training_baseVariables_5FoldCV_3,
+                                           method = "svmRadial",
+                                           trControl = ctrl_5_fold_CV,
+                                           tuneGrid = grid_radial,
+                                           tuneLength = 10,
+                                           metric = "Accuracy")
+
+RadialSVM_baseVariables_results_5FOLDCV_3 <- as.data.frame(RadialSVM_baseVariables_5FOLDCV_3$results)
+
+RadialSVM_baseVariables_5FOLDCVmaxAccuracies3 <- RadialSVM_baseVariables_results_5FOLDCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_baseVariables_5FOLDCVmaxAccuracies <- rbind(RadialSVM_baseVariables_5FOLDCVmaxAccuracies, 
+                                                      RadialSVM_baseVariables_5FOLDCVmaxAccuracies3)
+
+#fourth 5-fold CV
+Spinale_biochemical_training_baseVariables_5FoldCV_4 <- Spinale_biochemical_training[sample(nrow(Spinale_biochemical_training)),]
+
+#RANDOM FOREST
+randomForest_baseVariables_5FoldCV_4 <- train(response~MMP2_standardized + CRP_standardized + 
+                                                ST2_standardized + TIFRII_standardized,
+                                              Spinale_biochemical_training_baseVariables_5FoldCV_4,
+                                              method = "rf",
+                                              trControl = ctrl_5_fold_CV,
+                                              tuneLength = 4,
+                                              ntrees = 1000,
+                                              metric = "Accuracy")
+
+
+randomForest_baseVariables_results_5FoldCV_4 <- as.data.frame(randomForest_baseVariables_5FoldCV_4$results)
+
+randomForest_baseVariables_maxAccuracies_5FoldCV_4 <- randomForest_baseVariables_results_5FoldCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_baseVariables_maxAccuracies_5FoldCV <- rbind(randomForest_baseVariables_maxAccuracies_5FoldCV, 
+                                                          randomForest_baseVariables_maxAccuracies_5FoldCV_4)
+
+#LOGISTIC REGRESSION
+logisticRegression_baseVariables_5FoldCV_4 <- train(response ~ MMP2_standardized + CRP_standardized + 
+                                                      ST2_standardized + TIFRII_standardized,
+                                                    data = Spinale_biochemical_training_baseVariables_5FoldCV_4,
+                                                    family = "binomial",
+                                                    method = "glm",
+                                                    trControl = ctrl_5_fold_CV,
+                                                    metric = "Accuracy")
+
+logisticRegression_baseVariables_5FOLDCV_results_4 <- as.data.frame(logisticRegression_baseVariables_5FoldCV_4$results)
+
+logisticRegression_baseVariables_results_5FOLDCV <- rbind(logisticRegression_baseVariables_results_5FOLDCV,
+                                                          logisticRegression_baseVariables_5FOLDCV_results_4)
+
+#K-NEAREST NEIGHBORS
+KNN_baseVariables_5FOLDCV_4 <-  train(response ~ MMP2_standardized + CRP_standardized + 
+                                        ST2_standardized + TIFRII_standardized,
+                                      Spinale_biochemical_training_baseVariables_5FoldCV_4,
+                                      method = "knn",
+                                      trControl = ctrl_5_fold_CV,
+                                      tuneLength = 20,
+                                      metric = "Accuracy")
+
+KNN_baseVariables_results_5FOLDCV_4 <- as.data.frame(KNN_baseVariables_5FOLDCV_4$results)
+
+KNN_baseVariables_5FOLDCVmaxAccuracies4 <- KNN_baseVariables_results_5FOLDCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_baseVariables_5FOLDCVmaxAccuracies <- rbind(KNN_baseVariables_5FOLDCVmaxAccuracies, 
+                                                KNN_baseVariables_5FOLDCVmaxAccuracies4)
+
+#LINEAR SVM
+LinearSVM_baseVariables_5FOLDCV_4 <- train(response~.,
+                                           Spinale_biochemical_training_baseVariables_5FoldCV_4,
+                                           method = "svmLinear",
+                                           trControl = ctrl_5_fold_CV,
+                                           tuneGrid = grid,
+                                           tuneLength = 10,
+                                           metric = "Accuracy")
+
+LinearSVM_baseVariables_results_5FOLDCV_4 <- as.data.frame(LinearSVM_baseVariables_5FOLDCV_4$results)
+
+LinearSVM_baseVariables_5FOLDCVmaxAccuracies4 <- LinearSVM_baseVariables_results_5FOLDCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_baseVariables_5FOLDCVmaxAccuracies <- rbind(LinearSVM_baseVariables_5FOLDCVmaxAccuracies, 
+                                                      LinearSVM_baseVariables_5FOLDCVmaxAccuracies4)
+
+#RADIAL SVM
+RadialSVM_baseVariables_5FOLDCV_4 <- train(response~.,
+                                           Spinale_biochemical_training_baseVariables_5FoldCV_4,
+                                           method = "svmRadial",
+                                           trControl = ctrl_5_fold_CV,
+                                           tuneGrid = grid_radial,
+                                           tuneLength = 10,
+                                           metric = "Accuracy")
+
+RadialSVM_baseVariables_results_5FOLDCV_4 <- as.data.frame(RadialSVM_baseVariables_5FOLDCV_4$results)
+
+RadialSVM_baseVariables_5FOLDCVmaxAccuracies4 <- RadialSVM_baseVariables_results_5FOLDCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_baseVariables_5FOLDCVmaxAccuracies <- rbind(RadialSVM_baseVariables_5FOLDCVmaxAccuracies, 
+                                                      RadialSVM_baseVariables_5FOLDCVmaxAccuracies4)
+
+#fifth 5-fold CV
+Spinale_biochemical_training_baseVariables_5FoldCV_5 <- Spinale_biochemical_training[sample(nrow(Spinale_biochemical_training)),]
+
+#RANDOM FOREST
+randomForest_baseVariables_5FoldCV_5 <- train(response~MMP2_standardized + CRP_standardized + 
+                                                ST2_standardized + TIFRII_standardized,
+                                              Spinale_biochemical_training_baseVariables_5FoldCV_5,
+                                              method = "rf",
+                                              trControl = ctrl_5_fold_CV,
+                                              tuneLength = 4,
+                                              ntrees = 1000,
+                                              metric = "Accuracy")
+
+
+randomForest_baseVariables_results_5FoldCV_5 <- as.data.frame(randomForest_baseVariables_5FoldCV_5$results)
+
+randomForest_baseVariables_maxAccuracies_5FoldCV_5 <- randomForest_baseVariables_results_5FoldCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_baseVariables_maxAccuracies_5FoldCV <- rbind(randomForest_baseVariables_maxAccuracies_5FoldCV, 
+                                                          randomForest_baseVariables_maxAccuracies_5FoldCV_5)
+
+#LOGISTIC REGRESSION
+logisticRegression_baseVariables_5FoldCV_5 <- train(response ~ MMP2_standardized + CRP_standardized + 
+                                                      ST2_standardized + TIFRII_standardized,
+                                                    data = Spinale_biochemical_training_baseVariables_5FoldCV_5,
+                                                    family = "binomial",
+                                                    method = "glm",
+                                                    trControl = ctrl_5_fold_CV,
+                                                    metric = "Accuracy")
+
+logisticRegression_baseVariables_5FOLDCV_results_5 <- as.data.frame(logisticRegression_baseVariables_5FoldCV_5$results)
+
+logisticRegression_baseVariables_results_5FOLDCV <- rbind(logisticRegression_baseVariables_results_5FOLDCV,
+                                                          logisticRegression_baseVariables_5FOLDCV_results_5)
+
+#K-NEAREST NEIGHBORS
+KNN_baseVariables_5FOLDCV_5 <-  train(response ~ MMP2_standardized + CRP_standardized + 
+                                        ST2_standardized + TIFRII_standardized,
+                                      Spinale_biochemical_training_baseVariables_5FoldCV_5,
+                                      method = "knn",
+                                      trControl = ctrl_5_fold_CV,
+                                      tuneLength = 20,
+                                      metric = "Accuracy")
+
+KNN_baseVariables_results_5FOLDCV_5 <- as.data.frame(KNN_baseVariables_5FOLDCV_5$results)
+
+KNN_baseVariables_5FOLDCVmaxAccuracies5 <- KNN_baseVariables_results_5FOLDCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_baseVariables_5FOLDCVmaxAccuracies <- rbind(KNN_baseVariables_5FOLDCVmaxAccuracies, 
+                                                KNN_baseVariables_5FOLDCVmaxAccuracies5)
+
+#LINEAR SVM
+LinearSVM_baseVariables_5FOLDCV_5 <- train(response~MMP2_standardized + CRP_standardized + 
+                                             ST2_standardized + TIFRII_standardized,
+                                           Spinale_biochemical_training_baseVariables_5FoldCV_5,
+                                           method = "svmLinear",
+                                           trControl = ctrl_5_fold_CV,
+                                           tuneGrid = grid,
+                                           tuneLength = 10,
+                                           metric = "Accuracy")
+
+LinearSVM_baseVariables_results_5FOLDCV_5 <- as.data.frame(LinearSVM_baseVariables_5FOLDCV_5$results)
+
+LinearSVM_baseVariables_5FOLDCVmaxAccuracies5 <- LinearSVM_baseVariables_results_5FOLDCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_baseVariables_5FOLDCVmaxAccuracies <- rbind(LinearSVM_baseVariables_5FOLDCVmaxAccuracies, 
+                                                      LinearSVM_baseVariables_5FOLDCVmaxAccuracies5)
+
+#RADIAL SVM
+RadialSVM_baseVariables_5FOLDCV_5 <- train(response~MMP2_standardized + CRP_standardized + 
+                                             ST2_standardized + TIFRII_standardized,
+                                           Spinale_biochemical_training_baseVariables_5FoldCV_5,
+                                           method = "svmRadial",
+                                           trControl = ctrl_5_fold_CV,
+                                           tuneGrid = grid_radial,
+                                           tuneLength = 10,
+                                           metric = "Accuracy")
+
+RadialSVM_baseVariables_results_5FOLDCV_5 <- as.data.frame(RadialSVM_baseVariables_5FOLDCV_5$results)
+
+RadialSVM_baseVariables_5FOLDCVmaxAccuracies5 <- RadialSVM_baseVariables_results_5FOLDCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_baseVariables_5FOLDCVmaxAccuracies <- rbind(RadialSVM_baseVariables_5FOLDCVmaxAccuracies, 
+                                                      RadialSVM_baseVariables_5FOLDCVmaxAccuracies5)
+
+
+#-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
+#now we do 10 fold and 5 fold CV for the selected variables (CRP, ST2, TIFRII)
+
+#first 10-fold CV
+Spinale_biochemical_training_selectedVariables_1 <- Spinale_biochemical_training[sample(nrow(Spinale_biochemical_training)),]
+
+#RANDOM FOREST
+randomForest_selected_variables_10FOLDCV_1 <- train(response~ CRP_standardized + 
+                                                  ST2_standardized + TIFRII_standardized,
+                                                  Spinale_biochemical_training_selectedVariables_1,
+                                                method = "rf",
+                                                trControl = ctrl,
+                                                tuneLength = 3,
+                                                ntrees = 1000,
+                                                metric = "Accuracy")
+
+
+randomForest_selectedVariables_results_10FoldCV_1 <- as.data.frame(randomForest_selected_variables_10FOLDCV_1$results)
+
+randomForest_selectedVariables_maxAccuracies_10FoldCV <- randomForest_selectedVariables_results_10FoldCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#LOGISTIC REGRESSION
+logisticRegression_selectedVariables_10FoldCV_1 <- train(response ~ CRP_standardized + 
+                                                      ST2_standardized + TIFRII_standardized,
+                                                    data = Spinale_biochemical_training_selectedVariables_1,
+                                                    family = "binomial",
+                                                    method = "glm",
+                                                    trControl = ctrl,
+                                                    metric = "Accuracy")
+
+logisticRegression_selectedVariables_10FOLDCV_results_1 <- as.data.frame(logisticRegression_selectedVariables_10FoldCV_1$results)
+
+logisticRegression_selectedVariables_results_10FOLDCV <- logisticRegression_selectedVariables_10FOLDCV_results_1
+
+#K-NEAREST NEIGHBORS
+KNN_selectedVariables_10FoldCV_1 <-  train(response ~ CRP_standardized + 
+                                        ST2_standardized + TIFRII_standardized,
+                                       Spinale_biochemical_training_selectedVariables_1,
+                                      method = "knn",
+                                      trControl = ctrl,
+                                      tuneLength = 20,
+                                      metric = "Accuracy")
+
+KNN_selectedVariables_results_10FOLDCV_1 <- as.data.frame(KNN_selectedVariables_10FoldCV_1$results)
+
+KNN_selectedVariables_10FOLDCVmaxAccuracies <- KNN_selectedVariables_results_10FOLDCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#LINEAR SVM
+LINEARSVM_selectedVariables_10FOLDCV_1 <- train(response~ CRP_standardized + 
+                                          ST2_standardized + TIFRII_standardized,
+                                          Spinale_biochemical_training_selectedVariables_1,
+                                          method = "svmLinear",
+                                          trControl = ctrl,
+                                          tuneGrid = grid,
+                                          metric = "Accuracy")
+
+LinearSVM_selectedVariables_results_10FOLDCV_1 <- as.data.frame(LINEARSVM_selectedVariables_10FOLDCV_1$results)
+
+LinearSVM_selectedVariables_5FOLDCVmaxAccuracies <- LinearSVM_selectedVariables_results_10FOLDCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#RADIAL SVM
+RadialSVM_selectedVariables_10FOLDCV_1 <- train(response~CRP_standardized + 
+                                                  ST2_standardized + TIFRII_standardized,
+                                                Spinale_biochemical_training_selectedVariables_1,
+                                                method = "svmRadial",
+                                                trControl = ctrl,
+                                                tuneGrid = grid_radial,
+                                                metric = "Accuracy")
+
+RadialSVM_selectedVariables_results_10FOLDCV_1 <- as.data.frame(RadialSVM_selectedVariables_10FOLDCV_1$results)
+RadialSVM_selectedVariables_10FOLDCVmaxAccuracies <- RadialSVM_selectedVariables_results_10FOLDCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#2nd 10-fold CV
+Spinale_biochemical_training_selectedVariables_2 <- Spinale_biochemical_training[sample(nrow(Spinale_biochemical_training)),]
+
+#RANDOM FOREST
+randomForest_selected_variables_10FOLDCV_2 <- train(response~ CRP_standardized + 
+                                                      ST2_standardized + TIFRII_standardized,
+                                                    Spinale_biochemical_training_selectedVariables_2,
+                                                    method = "rf",
+                                                    trControl = ctrl,
+                                                    tuneLength = 3,
+                                                    ntrees = 1000,
+                                                    metric = "Accuracy")
+
+randomForest_selectedVariables_results_10FoldCV_2 <- as.data.frame(randomForest_selected_variables_10FOLDCV_2$results)
+
+randomForest_selectedVariables_maxAccuracies_10FoldCV_2 <- randomForest_selectedVariables_results_10FoldCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_selectedVariables_maxAccuracies_10FoldCV <- rbind(randomForest_selectedVariables_maxAccuracies_10FoldCV, 
+                                                          randomForest_selectedVariables_maxAccuracies_10FoldCV_2)
+#LOGISTIC REGRESSION
+logisticRegression_selectedVariables_10FoldCV_2 <- train(response ~ CRP_standardized + 
+                                                       ST2_standardized + TIFRII_standardized,
+                                                     data = Spinale_biochemical_training_selectedVariables_2,
+                                                     family = "binomial",
+                                                     method = "glm",
+                                                     trControl = ctrl,
+                                                     metric = "Accuracy")
+
+logisticRegression_selectedVariables_results_2 <- as.data.frame(logisticRegression_selectedVariables_10FoldCV_2$results)
+
+logisticRegression_selectedVariables_results_10FOLDCV <- rbind(logisticRegression_selectedVariables_results_10FOLDCV,
+                                                           logisticRegression_selectedVariables_results_2)
+
+#K-NEAREST NEIGHBORS
+KNN_selectedVariables_10FoldCV_2 <-  train(response ~ CRP_standardized + 
+                                         ST2_standardized + TIFRII_standardized,
+                                       Spinale_biochemical_training_selectedVariables_2,
+                                       method = "knn",
+                                       trControl = ctrl,
+                                       tuneLength = 20,
+                                       metric = "Accuracy")
+
+KNN_selectedVariables_results_10FOLDCV_2 <- as.data.frame(KNN_selectedVariables_10FoldCV_2$results)
+
+KNN_selectedVariables_10FOLDCVmaxAccuracies2 <- KNN_selectedVariables_results_10FOLDCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_selectedVariables_10FOLDCVmaxAccuracies <- rbind(KNN_selectedVariables_10FOLDCVmaxAccuracies, 
+                                                KNN_selectedVariables_10FOLDCVmaxAccuracies2)
+
+#LINEAR SVM
+LINEARSVM_selectedVariables_10FOLDCV_2 <- train(response~ CRP_standardized + 
+                                                 ST2_standardized + TIFRII_standardized,
+                                                Spinale_biochemical_training_selectedVariables_2,
+                                                method = "svmLinear",
+                                                trControl = ctrl,
+                                                tuneGrid = grid,
+                                                metric = "Accuracy")
+
+LinearSVM_selectedVariables_results_10FOLDCV_2 <- as.data.frame(LINEARSVM_selectedVariables_10FOLDCV_2$results)
+
+LinearSVM_selectedVariables_10FOLDCVmaxAccuracies2 <- LinearSVM_selectedVariables_results_10FOLDCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_selectedVariables_5FOLDCVmaxAccuracies <- rbind(LinearSVM_selectedVariables_5FOLDCVmaxAccuracies, 
+                                                      LinearSVM_selectedVariables_10FOLDCVmaxAccuracies2)
+
+#RADIAL SVM
+RadialSVM_selectedVariables_10FOLDCV_2 <- train(response~ CRP_standardized + 
+                                                  ST2_standardized + TIFRII_standardized,
+                                                Spinale_biochemical_training_selectedVariables_2,
+                                                method = "svmRadial",
+                                                trControl = ctrl,
+                                                tuneGrid = grid_radial,
+                                                metric = "Accuracy")
+
+RadialSVM_selectedVariables_results_10FOLDCV_2 <- as.data.frame(RadialSVM_selectedVariables_10FOLDCV_2$results)
+
+RadialSVM_selectedVariables_10FOLDCVmaxAccuracies2 <- RadialSVM_selectedVariables_results_10FOLDCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_selectedVariables_10FOLDCVmaxAccuracies <- rbind(RadialSVM_selectedVariables_10FOLDCVmaxAccuracies, 
+                                                           RadialSVM_selectedVariables_10FOLDCVmaxAccuracies2)
+
+#Third 10-fold CV
+Spinale_biochemical_training_selectedVariables_3 <- Spinale_biochemical_training[sample(nrow(Spinale_biochemical_training)),]
+
+#RANDOM FOREST
+randomForest_selected_variables_10FOLDCV_3 <- train(response~ CRP_standardized + 
+                                                      ST2_standardized + TIFRII_standardized,
+                                                    Spinale_biochemical_training_selectedVariables_3,
+                                                    method = "rf",
+                                                    trControl = ctrl,
+                                                    tuneLength = 3,
+                                                    ntrees = 1000,
+                                                    metric = "Accuracy")
+
+randomForest_selectedVariables_results_10FoldCV_3 <- as.data.frame(randomForest_selected_variables_10FOLDCV_3$results)
+
+randomForest_selectedVariables_maxAccuracies_10FoldCV_3 <- randomForest_selectedVariables_results_10FoldCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_selectedVariables_maxAccuracies_10FoldCV <- rbind(randomForest_selectedVariables_maxAccuracies_10FoldCV, 
+                                                               randomForest_selectedVariables_maxAccuracies_10FoldCV_3)
+#LOGISTIC REGRESSION
+logisticRegression_selectedVariables_10FoldCV_3 <- train(response ~ CRP_standardized + 
+                                                           ST2_standardized + TIFRII_standardized,
+                                                         data = Spinale_biochemical_training_selectedVariables_3,
+                                                         family = "binomial",
+                                                         method = "glm",
+                                                         trControl = ctrl,
+                                                         metric = "Accuracy")
+
+logisticRegression_selectedVariables_results_3 <- as.data.frame(logisticRegression_selectedVariables_10FoldCV_3$results)
+
+logisticRegression_selectedVariables_results_10FOLDCV <- rbind(logisticRegression_selectedVariables_results_10FOLDCV,
+                                                               logisticRegression_selectedVariables_results_3)
+
+#K-NEAREST NEIGHBORS
+KNN_selectedVariables_10FoldCV_3 <-  train(response ~ CRP_standardized + 
+                                         ST2_standardized + TIFRII_standardized,
+                                       Spinale_biochemical_training_selectedVariables_3,
+                                       method = "knn",
+                                       trControl = ctrl,
+                                       tuneLength = 20,
+                                       metric = "Accuracy")
+
+KNN_selectedVariables_results_10FOLDCV_3 <- as.data.frame(KNN_selectedVariables_10FoldCV_3$results)
+
+KNN_selectedVariables_10FOLDCVmaxAccuracies3 <- KNN_selectedVariables_results_10FOLDCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_selectedVariables_10FOLDCVmaxAccuracies <- rbind(KNN_selectedVariables_10FOLDCVmaxAccuracies, 
+                                                     KNN_selectedVariables_10FOLDCVmaxAccuracies3)
+
+#LINEAR SVM
+LINEARSVM_selectedVariables_10FOLDCV_3 <- train(response~ CRP_standardized + 
+                                                  ST2_standardized + TIFRII_standardized,
+                                                Spinale_biochemical_training_selectedVariables_3,
+                                                method = "svmLinear",
+                                                trControl = ctrl,
+                                                tuneGrid = grid,
+                                                metric = "Accuracy")
+
+LinearSVM_selectedVariables_results_10FOLDCV_3 <- as.data.frame(LINEARSVM_selectedVariables_10FOLDCV_3$results)
+
+LinearSVM_selectedVariables_10FOLDCVmaxAccuracies3 <- LinearSVM_selectedVariables_results_10FOLDCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_selectedVariables_5FOLDCVmaxAccuracies <- rbind(LinearSVM_selectedVariables_5FOLDCVmaxAccuracies, 
+                                                      LinearSVM_selectedVariables_10FOLDCVmaxAccuracies3)
+
+#RADIAL SVM
+RadialSVM_selectedVariables_10FOLDCV_3 <- train(response~ CRP_standardized + 
+                                                  ST2_standardized + TIFRII_standardized,
+                                                Spinale_biochemical_training_selectedVariables_3,
+                                                method = "svmRadial",
+                                                trControl = ctrl,
+                                                tuneGrid = grid_radial,
+                                                metric = "Accuracy")
+
+RadialSVM_selectedVariables_results_10FOLDCV_3 <- as.data.frame(RadialSVM_selectedVariables_10FOLDCV_3$results)
+
+RadialSVM_selectedVariables_10FOLDCVmaxAccuracies3 <- RadialSVM_selectedVariables_results_10FOLDCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_selectedVariables_10FOLDCVmaxAccuracies <- rbind(RadialSVM_selectedVariables_10FOLDCVmaxAccuracies, 
+                                                       RadialSVM_selectedVariables_10FOLDCVmaxAccuracies3)
+
+#Fourth 10-fold CV
+Spinale_biochemical_training_selectedVariables_4 <- Spinale_biochemical_training[sample(nrow(Spinale_biochemical_training)),]
+
+#RANDOM FOREST
+randomForest_selected_variables_10FOLDCV_4 <- train(response~ CRP_standardized + 
+                                                      ST2_standardized + TIFRII_standardized,
+                                                    Spinale_biochemical_training_selectedVariables_4,
+                                                    method = "rf",
+                                                    trControl = ctrl,
+                                                    tuneLength = 3,
+                                                    ntrees = 1000,
+                                                    metric = "Accuracy")
+
+randomForest_selectedVariables_results_10FoldCV_4 <- as.data.frame(randomForest_selected_variables_10FOLDCV_4$results)
+
+randomForest_selectedVariables_maxAccuracies_10FoldCV_4 <- randomForest_selectedVariables_results_10FoldCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_selectedVariables_maxAccuracies_10FoldCV <- rbind(randomForest_selectedVariables_maxAccuracies_10FoldCV, 
+                                                               randomForest_selectedVariables_maxAccuracies_10FoldCV_4)
+#LOGISTIC REGRESSION
+logisticRegression_selectedVariables_10FoldCV_4 <- train(response ~ CRP_standardized + 
+                                                           ST2_standardized + TIFRII_standardized,
+                                                         data = Spinale_biochemical_training_selectedVariables_4,
+                                                         family = "binomial",
+                                                         method = "glm",
+                                                         trControl = ctrl,
+                                                         metric = "Accuracy")
+
+logisticRegression_selectedVariables_results_4 <- as.data.frame(logisticRegression_selectedVariables_10FoldCV_4$results)
+
+logisticRegression_selectedVariables_results_10FOLDCV <- rbind(logisticRegression_selectedVariables_results_10FOLDCV,
+                                                               logisticRegression_selectedVariables_results_4)
+
+#K-NEAREST NEIGHBORS
+KNN_selectedVariables_10FoldCV_4 <-  train(response ~ CRP_standardized + 
+                                         ST2_standardized + TIFRII_standardized,
+                                       Spinale_biochemical_training_selectedVariables_4,
+                                       method = "knn",
+                                       trControl = ctrl,
+                                       tuneLength = 20,
+                                       metric = "Accuracy")
+
+KNN_selectedVariables_results_10FOLDCV_4 <- as.data.frame(KNN_selectedVariables_10FoldCV_4$results)
+
+KNN_selectedVariables_10FOLDCVmaxAccuracies4 <- KNN_selectedVariables_results_10FOLDCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_selectedVariables_10FOLDCVmaxAccuracies <- rbind(KNN_selectedVariables_10FOLDCVmaxAccuracies, 
+                                                     KNN_selectedVariables_10FOLDCVmaxAccuracies4)
+
+#LINEAR SVM
+LINEARSVM_selectedVariables_10FOLDCV_4 <- train(response~ CRP_standardized + 
+                                                  ST2_standardized + TIFRII_standardized,
+                                                Spinale_biochemical_training_selectedVariables_4,
+                                                method = "svmLinear",
+                                                trControl = ctrl,
+                                                tuneGrid = grid,
+                                                metric = "Accuracy")
+
+LinearSVM_selectedVariables_results_10FOLDCV_4 <- as.data.frame(LINEARSVM_selectedVariables_10FOLDCV_4$results)
+
+LinearSVM_selectedVariables_10FOLDCVmaxAccuracies4 <- LinearSVM_selectedVariables_results_10FOLDCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_selectedVariables_5FOLDCVmaxAccuracies <- rbind(LinearSVM_selectedVariables_5FOLDCVmaxAccuracies, 
+                                                      LinearSVM_selectedVariables_10FOLDCVmaxAccuracies4)
+
+#RADIAL SVM
+RadialSVM_selectedVariables_10FOLDCV_4 <- train(response~ CRP_standardized + 
+                                                  ST2_standardized + TIFRII_standardized,
+                                                Spinale_biochemical_training_selectedVariables_4,
+                                                method = "svmRadial",
+                                                trControl = ctrl,
+                                                tuneGrid = grid_radial,
+                                                metric = "Accuracy")
+
+RadialSVM_selectedVariables_results_10FOLDCV_4 <- as.data.frame(RadialSVM_selectedVariables_10FOLDCV_4$results)
+
+RadialSVM_selectedVariables_10FOLDCVmaxAccuracies4 <- RadialSVM_selectedVariables_results_10FOLDCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_selectedVariables_10FOLDCVmaxAccuracies <- rbind(RadialSVM_selectedVariables_10FOLDCVmaxAccuracies, 
+                                                       RadialSVM_selectedVariables_10FOLDCVmaxAccuracies4)
+
+#Fifth 10-fold CV
+Spinale_biochemical_training_selectedVariables_5 <- Spinale_biochemical_training[sample(nrow(Spinale_biochemical_training)),]
+
+#RANDOM FOREST
+randomForest_selected_variables_10FOLDCV_5 <- train(response~ CRP_standardized + 
+                                                      ST2_standardized + TIFRII_standardized,
+                                                    Spinale_biochemical_training_selectedVariables_5,
+                                                    method = "rf",
+                                                    trControl = ctrl,
+                                                    tuneLength = 3,
+                                                    ntrees = 1000,
+                                                    metric = "Accuracy")
+
+randomForest_selectedVariables_results_10FoldCV_5 <- as.data.frame(randomForest_selected_variables_10FOLDCV_5$results)
+
+randomForest_selectedVariables_maxAccuracies_10FoldCV_5 <- randomForest_selectedVariables_results_10FoldCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_selectedVariables_maxAccuracies_10FoldCV <- rbind(randomForest_selectedVariables_maxAccuracies_10FoldCV, 
+                                                               randomForest_selectedVariables_maxAccuracies_10FoldCV_5)
+#LOGISTIC REGRESSION
+logisticRegression_selectedVariables_10FoldCV_5 <- train(response ~ CRP_standardized + 
+                                                           ST2_standardized + TIFRII_standardized,
+                                                         data = Spinale_biochemical_training_selectedVariables_5,
+                                                         family = "binomial",
+                                                         method = "glm",
+                                                         trControl = ctrl,
+                                                         metric = "Accuracy")
+
+logisticRegression_selectedVariables_results_5 <- as.data.frame(logisticRegression_selectedVariables_10FoldCV_5$results)
+
+logisticRegression_selectedVariables_results_10FOLDCV <- rbind(logisticRegression_selectedVariables_results_10FOLDCV,
+                                                               logisticRegression_selectedVariables_results_5)
+
+#K-NEAREST NEIGHBORS
+KNN_selectedVariables_10FoldCV_5 <-  train(response ~ CRP_standardized + 
+                                         ST2_standardized + TIFRII_standardized,
+                                       Spinale_biochemical_training_selectedVariables_5,
+                                       method = "knn",
+                                       trControl = ctrl,
+                                       tuneLength = 20,
+                                       metric = "Accuracy")
+
+KNN_selectedVariables_results_10FOLDCV_5 <- as.data.frame(KNN_selectedVariables_10FoldCV_5$results)
+
+KNN_selectedVariables_10FOLDCVmaxAccuracies5 <- KNN_selectedVariables_results_10FOLDCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_selectedVariables_10FOLDCVmaxAccuracies <- rbind(KNN_selectedVariables_10FOLDCVmaxAccuracies, 
+                                                     KNN_selectedVariables_10FOLDCVmaxAccuracies5)
+
+#LINEAR SVM
+LINEARSVM_selectedVariables_10FOLDCV_5 <- train(response~ CRP_standardized + 
+                                                  ST2_standardized + TIFRII_standardized,
+                                                Spinale_biochemical_training_selectedVariables_5,
+                                                method = "svmLinear",
+                                                trControl = ctrl,
+                                                tuneGrid = grid,
+                                                metric = "Accuracy")
+
+LinearSVM_selectedVariables_results_10FOLDCV_5 <- as.data.frame(LINEARSVM_selectedVariables_10FOLDCV_5$results)
+
+LinearSVM_selectedVariables_10FOLDCVmaxAccuracies5 <- LinearSVM_selectedVariables_results_10FOLDCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_selectedVariables_5FOLDCVmaxAccuracies <- rbind(LinearSVM_selectedVariables_5FOLDCVmaxAccuracies, 
+                                                      LinearSVM_selectedVariables_10FOLDCVmaxAccuracies5)
+
+#RADIAL SVM
+RadialSVM_selectedVariables_10FOLDCV_5 <- train(response~ CRP_standardized + 
+                                                  ST2_standardized + TIFRII_standardized,
+                                                Spinale_biochemical_training_selectedVariables_5,
+                                                method = "svmRadial",
+                                                trControl = ctrl,
+                                                tuneGrid = grid_radial,
+                                                metric = "Accuracy")
+
+RadialSVM_selectedVariables_results_10FOLDCV_5 <- as.data.frame(RadialSVM_selectedVariables_10FOLDCV_5$results)
+
+RadialSVM_selectedVariables_10FOLDCVmaxAccuracies5 <- RadialSVM_selectedVariables_results_10FOLDCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_selectedVariables_10FOLDCVmaxAccuracies <- rbind(RadialSVM_selectedVariables_10FOLDCVmaxAccuracies, 
+                                                       RadialSVM_selectedVariables_10FOLDCVmaxAccuracies5)
+
+#-----------------------------------------------------------------------------------------
+#now let's do 5 5-fold CVs 
+Spinale_biochemical_training_selectedVariables_5FoldCV_1 <- Spinale_biochemical_training[sample(nrow(Spinale_biochemical_training)),]
+
+#RANDOM FOREST
+randomForest_selectedVariables_5FoldCV_1 <- train(response~CRP_standardized + 
+                                                ST2_standardized + TIFRII_standardized,
+                                              Spinale_biochemical_training_selectedVariables_5FoldCV_1,
+                                              method = "rf",
+                                              trControl = ctrl_5_fold_CV,
+                                              tuneLength = 12,
+                                              ntrees = 1000,
+                                              metric = "Accuracy")
+
+
+randomForest_selectedVariables_results_5FoldCV_1 <- as.data.frame(randomForest_selectedVariables_5FoldCV_1$results)
+
+randomForest_selectedVariables_maxAccuracies_5FoldCV <- randomForest_selectedVariables_results_5FoldCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#LOGISTIC REGRESSION
+logisticRegression_selectedVariables_5FoldCV_1 <- train(response~CRP_standardized + 
+                                                      ST2_standardized + TIFRII_standardized,
+                                                    data = Spinale_biochemical_training_selectedVariables_5FoldCV_1,
+                                                    family = "binomial",
+                                                    method = "glm",
+                                                    trControl = ctrl_5_fold_CV,
+                                                    metric = "Accuracy")
+
+logisticRegression_selectedVariables_5FOLDCV_results_1 <- as.data.frame(logisticRegression_selectedVariables_5FoldCV_1$results)
+
+logisticRegression_selectedVariables_results_5FOLDCV <- logisticRegression_selectedVariables_5FOLDCV_results_1
+
+#K-NEAREST NEIGHBORS
+KNN_selectedVariables_5FOLDCV_1 <-  train(response~CRP_standardized + 
+                                        ST2_standardized + TIFRII_standardized,
+                                        Spinale_biochemical_training_selectedVariables_5FoldCV_1,
+                                      method = "knn",
+                                      trControl = ctrl_5_fold_CV,
+                                      tuneLength = 20,
+                                      metric = "Accuracy")
+
+KNN_selectedVariables_results_5FOLDCV_1 <- as.data.frame(KNN_selectedVariables_5FOLDCV_1$results)
+
+KNN_selectedVariables_5FOLDCVmaxAccuracies <- KNN_selectedVariables_results_5FOLDCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#LINEAR SVM
+LinearSVM_selectedVariables_5FOLDCV_1 <- train(response~CRP_standardized + 
+                                             ST2_standardized + TIFRII_standardized,
+                                             Spinale_biochemical_training_selectedVariables_5FoldCV_1,
+                                           method = "svmLinear",
+                                           trControl = ctrl_5_fold_CV,
+                                           tuneGrid = grid,
+                                           tuneLength = 10,
+                                           metric = "Accuracy")
+
+LinearSVM_selectedVariables_results_5FOLDCV_1 <- as.data.frame(LinearSVM_selectedVariables_5FOLDCV_1$results)
+
+LinearSVM_selectedVariables_5FOLDCVmaxAccuracies <- LinearSVM_selectedVariables_results_5FOLDCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#RADIAL SVM
+RadialSVM_selectedVariables_5FOLDCV_1 <- train(response ~CRP_standardized + 
+                                             ST2_standardized + TIFRII_standardized,
+                                             Spinale_biochemical_training_selectedVariables_5FoldCV_1,
+                                           method = "svmRadial",
+                                           trControl = ctrl_5_fold_CV,
+                                           tuneGrid = grid_radial,
+                                           tuneLength = 10,
+                                           metric = "Accuracy")
+
+RadialSVM_selectedVariables_results_5FOLDCV_1 <- as.data.frame(RadialSVM_selectedVariables_5FOLDCV_1$results)
+
+RadialSVM_selectedVariables_5FOLDCVmaxAccuracies <- RadialSVM_selectedVariables_results_5FOLDCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+
+#2nd 5-fold CV
+Spinale_biochemical_training_selectedVariables_5FoldCV_2 <- Spinale_biochemical_training[sample(nrow(Spinale_biochemical_training)),]
+
+#RANDOM FOREST
+randomForest_selected_variables_5FOLDCV_2 <- train(response~ CRP_standardized + 
+                                                      ST2_standardized + TIFRII_standardized,
+                                                   Spinale_biochemical_training_selectedVariables_5FoldCV_2,
+                                                    method = "rf",
+                                                    trControl = ctrl_5_fold_CV,
+                                                    tuneLength = 3,
+                                                    ntrees = 1000,
+                                                    metric = "Accuracy")
+
+randomForest_selectedVariables_results_5FoldCV_2 <- as.data.frame(randomForest_selected_variables_5FOLDCV_2$results)
+
+randomForest_selectedVariables_maxAccuracies_5FoldCV_2 <- randomForest_selectedVariables_results_5FoldCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_selectedVariables_maxAccuracies_5FoldCV <- rbind(randomForest_selectedVariables_maxAccuracies_5FoldCV, 
+                                                               randomForest_selectedVariables_maxAccuracies_5FoldCV_2)
+#LOGISTIC REGRESSION
+logisticRegression_selectedVariables_5FoldCV_2 <- train(response ~ CRP_standardized + 
+                                                           ST2_standardized + TIFRII_standardized,
+                                                         data = Spinale_biochemical_training_selectedVariables_5FoldCV_2,
+                                                         family = "binomial",
+                                                         method = "glm",
+                                                         trControl = ctrl_5_fold_CV,
+                                                         metric = "Accuracy")
+
+logisticRegression_selectedVariables_results_5FOLDCV_2 <- as.data.frame(logisticRegression_selectedVariables_5FoldCV_2$results)
+
+
+logisticRegression_selectedVariables_results_5FOLDCV <- rbind(logisticRegression_selectedVariables_results_5FOLDCV,
+                                                               logisticRegression_selectedVariables_results_5FOLDCV_2)
+
+#K-NEAREST NEIGHBORS
+KNN_selectedVariables_5FoldCV_2 <-  train(response ~ CRP_standardized + 
+                                             ST2_standardized + TIFRII_standardized,
+                                          Spinale_biochemical_training_selectedVariables_5FoldCV_2,
+                                           method = "knn",
+                                           trControl = ctrl_5_fold_CV,
+                                           tuneLength = 20,
+                                           metric = "Accuracy")
+
+KNN_selectedVariables_results_5FOLDCV_2 <- as.data.frame(KNN_selectedVariables_5FoldCV_2$results)
+
+KNN_selectedVariables_5FOLDCVmaxAccuracies2 <- KNN_selectedVariables_results_5FOLDCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_selectedVariables_5FOLDCVmaxAccuracies <- rbind(KNN_selectedVariables_5FOLDCVmaxAccuracies, 
+                                                     KNN_selectedVariables_5FOLDCVmaxAccuracies2)
+
+#LINEAR SVM
+LINEARSVM_selectedVariables_5FOLDCV_2 <- train(response~ CRP_standardized + 
+                                                  ST2_standardized + TIFRII_standardized,
+                                               Spinale_biochemical_training_selectedVariables_5FoldCV_2,
+                                                method = "svmLinear",
+                                                trControl = ctrl_5_fold_CV,
+                                                tuneGrid = grid,
+                                                metric = "Accuracy")
+
+LinearSVM_selectedVariables_results_5FOLDCV_2 <- as.data.frame(LINEARSVM_selectedVariables_5FOLDCV_2$results)
+
+LinearSVM_selectedVariables_5FOLDCVmaxAccuracies2 <- LinearSVM_selectedVariables_results_5FOLDCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_selectedVariables_5FOLDCVmaxAccuracies <- rbind(LinearSVM_selectedVariables_5FOLDCVmaxAccuracies, 
+                                                          LinearSVM_selectedVariables_5FOLDCVmaxAccuracies2)
+
+#RADIAL SVM
+RadialSVM_selectedVariables_5FOLDCV_2 <- train(response~ CRP_standardized + 
+                                                  ST2_standardized + TIFRII_standardized,
+                                               Spinale_biochemical_training_selectedVariables_5FoldCV_2,
+                                                method = "svmRadial",
+                                                trControl = ctrl_5_fold_CV,
+                                                tuneGrid = grid_radial,
+                                                metric = "Accuracy")
+
+RadialSVM_selectedVariables_results_5FOLDCV_2 <- as.data.frame(RadialSVM_selectedVariables_5FOLDCV_2$results)
+
+RadialSVM_selectedVariables_5FOLDCVmaxAccuracies2 <- RadialSVM_selectedVariables_results_5FOLDCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_selectedVariables_5FOLDCVmaxAccuracies <- rbind(RadialSVM_selectedVariables_5FOLDCVmaxAccuracies, 
+                                                           RadialSVM_selectedVariables_5FOLDCVmaxAccuracies2)
+
+
+#Third 5-fold CV
+Spinale_biochemical_training_selectedVariables_5FoldCV_3 <- Spinale_biochemical_training[sample(nrow(Spinale_biochemical_training)),]
+
+#RANDOM FOREST
+randomForest_selected_variables_5FOLDCV_3 <- train(response~ CRP_standardized + 
+                                                     ST2_standardized + TIFRII_standardized,
+                                                   Spinale_biochemical_training_selectedVariables_5FoldCV_3,
+                                                   method = "rf",
+                                                   trControl = ctrl_5_fold_CV,
+                                                   tuneLength = 3,
+                                                   ntrees = 1000,
+                                                   metric = "Accuracy")
+
+randomForest_selectedVariables_results_5FoldCV_3 <- as.data.frame(randomForest_selected_variables_5FOLDCV_3$results)
+
+randomForest_selectedVariables_maxAccuracies_5FoldCV_3 <- randomForest_selectedVariables_results_5FoldCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_selectedVariables_maxAccuracies_5FoldCV <- rbind(randomForest_selectedVariables_maxAccuracies_5FoldCV, 
+                                                              randomForest_selectedVariables_maxAccuracies_5FoldCV_3)
+#LOGISTIC REGRESSION
+logisticRegression_selectedVariables_5FoldCV_3 <- train(response ~ CRP_standardized + 
+                                                          ST2_standardized + TIFRII_standardized,
+                                                        data = Spinale_biochemical_training_selectedVariables_5FoldCV_3,
+                                                        family = "binomial",
+                                                        method = "glm",
+                                                        trControl = ctrl_5_fold_CV,
+                                                        metric = "Accuracy")
+
+logisticRegression_selectedVariables_results_5FOLDCV_3 <- as.data.frame(logisticRegression_selectedVariables_5FoldCV_3$results)
+
+
+logisticRegression_selectedVariables_results_5FOLDCV <- rbind(logisticRegression_selectedVariables_results_5FOLDCV,
+                                                              logisticRegression_selectedVariables_results_5FOLDCV_3)
+
+#K-NEAREST NEIGHBORS
+KNN_selectedVariables_5FoldCV_3 <-  train(response ~ CRP_standardized + 
+                                            ST2_standardized + TIFRII_standardized,
+                                          Spinale_biochemical_training_selectedVariables_5FoldCV_3,
+                                          method = "knn",
+                                          trControl = ctrl_5_fold_CV,
+                                          tuneLength = 20,
+                                          metric = "Accuracy")
+
+KNN_selectedVariables_results_5FOLDCV_3 <- as.data.frame(KNN_selectedVariables_5FoldCV_3$results)
+
+KNN_selectedVariables_5FOLDCVmaxAccuracies3 <- KNN_selectedVariables_results_5FOLDCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_selectedVariables_5FOLDCVmaxAccuracies <- rbind(KNN_selectedVariables_5FOLDCVmaxAccuracies, 
+                                                    KNN_selectedVariables_5FOLDCVmaxAccuracies3)
+
+#LINEAR SVM
+LINEARSVM_selectedVariables_5FOLDCV_3 <- train(response~ CRP_standardized + 
+                                                 ST2_standardized + TIFRII_standardized,
+                                               Spinale_biochemical_training_selectedVariables_5FoldCV_3,
+                                               method = "svmLinear",
+                                               trControl = ctrl_5_fold_CV,
+                                               tuneGrid = grid,
+                                               metric = "Accuracy")
+
+LinearSVM_selectedVariables_results_5FOLDCV_3 <- as.data.frame(LINEARSVM_selectedVariables_5FOLDCV_3$results)
+
+LinearSVM_selectedVariables_5FOLDCVmaxAccuracies3 <- LinearSVM_selectedVariables_results_5FOLDCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_selectedVariables_5FOLDCVmaxAccuracies <- rbind(LinearSVM_selectedVariables_5FOLDCVmaxAccuracies, 
+                                                          LinearSVM_selectedVariables_5FOLDCVmaxAccuracies3)
+
+#RADIAL SVM
+RadialSVM_selectedVariables_5FOLDCV_3 <- train(response~ CRP_standardized + 
+                                                 ST2_standardized + TIFRII_standardized,
+                                               Spinale_biochemical_training_selectedVariables_5FoldCV_3,
+                                               method = "svmRadial",
+                                               trControl = ctrl_5_fold_CV,
+                                               tuneGrid = grid_radial,
+                                               metric = "Accuracy")
+
+RadialSVM_selectedVariables_results_5FOLDCV_3 <- as.data.frame(RadialSVM_selectedVariables_5FOLDCV_3$results)
+
+RadialSVM_selectedVariables_5FOLDCVmaxAccuracies3 <- RadialSVM_selectedVariables_results_5FOLDCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_selectedVariables_5FOLDCVmaxAccuracies <- rbind(RadialSVM_selectedVariables_5FOLDCVmaxAccuracies, 
+                                                          RadialSVM_selectedVariables_5FOLDCVmaxAccuracies3)
+
+#Fourth 5-fold CV
+Spinale_biochemical_training_selectedVariables_5FoldCV_4 <- Spinale_biochemical_training[sample(nrow(Spinale_biochemical_training)),]
+
+#RANDOM FOREST
+randomForest_selected_variables_5FOLDCV_4 <- train(response~ CRP_standardized + 
+                                                     ST2_standardized + TIFRII_standardized,
+                                                   Spinale_biochemical_training_selectedVariables_5FoldCV_4,
+                                                   method = "rf",
+                                                   trControl = ctrl_5_fold_CV,
+                                                   tuneLength = 3,
+                                                   ntrees = 1000,
+                                                   metric = "Accuracy")
+
+randomForest_selectedVariables_results_5FoldCV_4 <- as.data.frame(randomForest_selected_variables_5FOLDCV_4$results)
+
+randomForest_selectedVariables_maxAccuracies_5FoldCV_4 <- randomForest_selectedVariables_results_5FoldCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_selectedVariables_maxAccuracies_5FoldCV <- rbind(randomForest_selectedVariables_maxAccuracies_5FoldCV, 
+                                                              randomForest_selectedVariables_maxAccuracies_5FoldCV_4)
+#LOGISTIC REGRESSION
+logisticRegression_selectedVariables_5FoldCV_4 <- train(response ~ CRP_standardized + 
+                                                          ST2_standardized + TIFRII_standardized,
+                                                        data = Spinale_biochemical_training_selectedVariables_5FoldCV_4,
+                                                        family = "binomial",
+                                                        method = "glm",
+                                                        trControl = ctrl_5_fold_CV,
+                                                        metric = "Accuracy")
+
+logisticRegression_selectedVariables_results_5FOLDCV_4 <- as.data.frame(logisticRegression_selectedVariables_5FoldCV_4$results)
+
+
+logisticRegression_selectedVariables_results_5FOLDCV <- rbind(logisticRegression_selectedVariables_results_5FOLDCV,
+                                                              logisticRegression_selectedVariables_results_5FOLDCV_4)
+
+#K-NEAREST NEIGHBORS
+KNN_selectedVariables_5FoldCV_4 <-  train(response ~ CRP_standardized + 
+                                            ST2_standardized + TIFRII_standardized,
+                                          Spinale_biochemical_training_selectedVariables_5FoldCV_4,
+                                          method = "knn",
+                                          trControl = ctrl_5_fold_CV,
+                                          tuneLength = 20,
+                                          metric = "Accuracy")
+
+KNN_selectedVariables_results_5FOLDCV_4 <- as.data.frame(KNN_selectedVariables_5FoldCV_4$results)
+
+KNN_selectedVariables_5FOLDCVmaxAccuracies4 <- KNN_selectedVariables_results_5FOLDCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_selectedVariables_5FOLDCVmaxAccuracies <- rbind(KNN_selectedVariables_5FOLDCVmaxAccuracies, 
+                                                    KNN_selectedVariables_5FOLDCVmaxAccuracies4)
+
+#LINEAR SVM
+LINEARSVM_selectedVariables_5FOLDCV_4 <- train(response~ CRP_standardized + 
+                                                 ST2_standardized + TIFRII_standardized,
+                                               Spinale_biochemical_training_selectedVariables_5FoldCV_4,
+                                               method = "svmLinear",
+                                               trControl = ctrl_5_fold_CV,
+                                               tuneGrid = grid,
+                                               metric = "Accuracy")
+
+LinearSVM_selectedVariables_results_5FOLDCV_4 <- as.data.frame(LINEARSVM_selectedVariables_5FOLDCV_4$results)
+
+LinearSVM_selectedVariables_5FOLDCVmaxAccuracies4 <- LinearSVM_selectedVariables_results_5FOLDCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_selectedVariables_5FOLDCVmaxAccuracies <- rbind(LinearSVM_selectedVariables_5FOLDCVmaxAccuracies, 
+                                                          LinearSVM_selectedVariables_5FOLDCVmaxAccuracies4)
+
+#RADIAL SVM
+RadialSVM_selectedVariables_5FOLDCV_4 <- train(response~ CRP_standardized + 
+                                                 ST2_standardized + TIFRII_standardized,
+                                               Spinale_biochemical_training_selectedVariables_5FoldCV_4,
+                                               method = "svmRadial",
+                                               trControl = ctrl_5_fold_CV,
+                                               tuneGrid = grid_radial,
+                                               metric = "Accuracy")
+
+RadialSVM_selectedVariables_results_5FOLDCV_4 <- as.data.frame(RadialSVM_selectedVariables_5FOLDCV_4$results)
+
+RadialSVM_selectedVariables_5FOLDCVmaxAccuracies4 <- RadialSVM_selectedVariables_results_5FOLDCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_selectedVariables_5FOLDCVmaxAccuracies <- rbind(RadialSVM_selectedVariables_5FOLDCVmaxAccuracies, 
+                                                          RadialSVM_selectedVariables_5FOLDCVmaxAccuracies4)
+
+
+#Fifth 5-fold CV
+Spinale_biochemical_training_selectedVariables_5FoldCV_5 <- Spinale_biochemical_training[sample(nrow(Spinale_biochemical_training)),]
+
+#RANDOM FOREST
+randomForest_selected_variables_5FOLDCV_5 <- train(response~ CRP_standardized + 
+                                                     ST2_standardized + TIFRII_standardized,
+                                                   Spinale_biochemical_training_selectedVariables_5FoldCV_5,
+                                                   method = "rf",
+                                                   trControl = ctrl_5_fold_CV,
+                                                   tuneLength = 3,
+                                                   ntrees = 1000,
+                                                   metric = "Accuracy")
+
+randomForest_selectedVariables_results_5FoldCV_5 <- as.data.frame(randomForest_selected_variables_5FOLDCV_5$results)
+
+randomForest_selectedVariables_maxAccuracies_5FoldCV_5 <- randomForest_selectedVariables_results_5FoldCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_selectedVariables_maxAccuracies_5FoldCV <- rbind(randomForest_selectedVariables_maxAccuracies_5FoldCV, 
+                                                              randomForest_selectedVariables_maxAccuracies_5FoldCV_5)
+#LOGISTIC REGRESSION
+logisticRegression_selectedVariables_5FoldCV_5 <- train(response ~ CRP_standardized + 
+                                                          ST2_standardized + TIFRII_standardized,
+                                                        data = Spinale_biochemical_training_selectedVariables_5FoldCV_5,
+                                                        family = "binomial",
+                                                        method = "glm",
+                                                        trControl = ctrl_5_fold_CV,
+                                                        metric = "Accuracy")
+
+logisticRegression_selectedVariables_results_5FOLDCV_5 <- as.data.frame(logisticRegression_selectedVariables_5FoldCV_5$results)
+
+
+logisticRegression_selectedVariables_results_5FOLDCV <- rbind(logisticRegression_selectedVariables_results_5FOLDCV,
+                                                              logisticRegression_selectedVariables_results_5FOLDCV_5)
+
+#K-NEAREST NEIGHBORS
+KNN_selectedVariables_5FoldCV_5 <-  train(response ~ CRP_standardized + 
+                                            ST2_standardized + TIFRII_standardized,
+                                          Spinale_biochemical_training_selectedVariables_5FoldCV_5,
+                                          method = "knn",
+                                          trControl = ctrl_5_fold_CV,
+                                          tuneLength = 20,
+                                          metric = "Accuracy")
+
+KNN_selectedVariables_results_5FOLDCV_5 <- as.data.frame(KNN_selectedVariables_5FoldCV_5$results)
+
+KNN_selectedVariables_5FOLDCVmaxAccuracies5 <- KNN_selectedVariables_results_5FOLDCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_selectedVariables_5FOLDCVmaxAccuracies <- rbind(KNN_selectedVariables_5FOLDCVmaxAccuracies, 
+                                                    KNN_selectedVariables_5FOLDCVmaxAccuracies5)
+
+#LINEAR SVM
+LINEARSVM_selectedVariables_5FOLDCV_5 <- train(response~ CRP_standardized + 
+                                                 ST2_standardized + TIFRII_standardized,
+                                               Spinale_biochemical_training_selectedVariables_5FoldCV_5,
+                                               method = "svmLinear",
+                                               trControl = ctrl_5_fold_CV,
+                                               tuneGrid = grid,
+                                               metric = "Accuracy")
+
+LinearSVM_selectedVariables_results_5FOLDCV_5 <- as.data.frame(LINEARSVM_selectedVariables_5FOLDCV_5$results)
+
+LinearSVM_selectedVariables_5FOLDCVmaxAccuracies5 <- LinearSVM_selectedVariables_results_5FOLDCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_selectedVariables_5FOLDCVmaxAccuracies <- rbind(LinearSVM_selectedVariables_5FOLDCVmaxAccuracies, 
+                                                          LinearSVM_selectedVariables_5FOLDCVmaxAccuracies5)
+
+#RADIAL SVM
+RadialSVM_selectedVariables_5FOLDCV_5 <- train(response~ CRP_standardized + 
+                                                 ST2_standardized + TIFRII_standardized,
+                                               Spinale_biochemical_training_selectedVariables_5FoldCV_5,
+                                               method = "svmRadial",
+                                               trControl = ctrl_5_fold_CV,
+                                               tuneGrid = grid_radial,
+                                               metric = "Accuracy")
+
+RadialSVM_selectedVariables_results_5FOLDCV_5 <- as.data.frame(RadialSVM_selectedVariables_5FOLDCV_5$results)
+
+RadialSVM_selectedVariables_5FOLDCVmaxAccuracies5 <- RadialSVM_selectedVariables_results_5FOLDCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_selectedVariables_5FOLDCVmaxAccuracies <- rbind(RadialSVM_selectedVariables_5FOLDCVmaxAccuracies, 
+                                                          RadialSVM_selectedVariables_5FOLDCVmaxAccuracies5)
+
+
+#---------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------
+#finally done with just biochemicals, let's do just clinical now
+#for this, because Stretch was the only important variable, we can do all the variables
+#and  call it a day
+indexes_for_clinical <- createDataPartition(SpinaleClinicalMarkersAndResponseStandardized$response,
+                                                     times = 1,
+                                                     p = 0.7,
+                                                     list = FALSE)
+Spinale_clinical_training <- SpinaleClinicalMarkersAndResponseStandardized[indexes_for_clinical,]
+Spinale_clinical_test <- SpinaleProteinsAndResponses2[-indexes_for_clinical,]
+
+#first 10 fold CV
+SpinaleClinical_10FOLDCV_1<- Spinale_clinical_training[sample(nrow(Spinale_clinical_training)),]
+
+#RANDOM FOREST
+
+randomForest_allClinical_10FoldCV_1 <- train(response~.,
+                                             SpinaleClinical_10FOLDCV_1,
+                                                  method = "rf",
+                                                  trControl = ctrl,
+                                                  tuneLength = 9,
+                                                  ntrees = 1000,
+                                                  metric = "Accuracy")
+
+
+randomForest_allClinical_results_10FoldCV_1 <- as.data.frame(randomForest_allClinical_10FoldCV_1$results)
+
+randomForest_allClinical_maxAccuracies_10FoldCV <- randomForest_allClinical_results_10FoldCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#LOGISTIC REGRESSION
+logisticRegression_allClinical_10FoldCV_1 <- train(response~.,
+                                                        data = SpinaleClinical_10FOLDCV_1,
+                                                        family = "binomial",
+                                                        method = "glm",
+                                                        trControl = ctrl,
+                                                        metric = "Accuracy")
+
+logisticRegression_allClinical_results_10FoldCV_1 <- as.data.frame(logisticRegression_allClinical_10FoldCV_1$results)
+
+logisticRegression_allClinical_maxAccuracies_10FoldCV <- logisticRegression_allClinical_results_10FoldCV_1
+
+
+#K-NEAREST NEIGHBORS
+KNN_allClinical_10FoldCV_1 <-  train(response~.,
+                                     SpinaleClinical_10FOLDCV_1,
+                                          method = "knn",
+                                          trControl = ctrl,
+                                          tuneLength = 20,
+                                          metric = "Accuracy")
+
+KNN_allClinical_results_10FoldCV_1 <- as.data.frame(KNN_allClinical_10FoldCV_1$results)
+
+KNN_allClinical_maxAccuracies_10FoldCV <- KNN_allClinical_results_10FoldCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#LINEAR SVM
+LinearSVM_allClinical_10FoldCV_1 <- train(response~.,
+                                          SpinaleClinical_10FOLDCV_1,
+                                               method = "svmLinear",
+                                               trControl = ctrl,
+                                               tuneGrid = grid,
+                                               metric = "Accuracy")
+
+LinearSVM_allClinical_results_10FoldCV_1 <- as.data.frame(LinearSVM_allClinical_10FoldCV_1$results)
+
+LinearSVM_allClinical_maxAccuracies_10FoldCV <- LinearSVM_allClinical_results_10FoldCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#RADIAL SVM
+RadialSVM_allClinical_10FoldCV_1 <- train(response ~.,
+                                          SpinaleClinical_10FOLDCV_1,
+                                               method = "svmRadial",
+                                               trControl = ctrl,
+                                               tuneGrid = grid_radial,
+                                               metric = "Accuracy")
+
+RadialSVM_allClinical_results_10FoldCV_1 <- as.data.frame(RadialSVM_allClinical_10FoldCV_1$results)
+
+RadialSVM_allClinical_maxAccuracies_10FoldCV <- RadialSVM_allClinical_results_10FoldCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#Second 10-Fold CV
+SpinaleClinical_10FOLDCV_2<- Spinale_clinical_training[sample(nrow(Spinale_clinical_training)),]
+
+#RANDOM FOREST
+randomForest_allClinical_10FoldCV_2 <- train(response~.,
+                                             SpinaleClinical_10FOLDCV_2,
+                                             method = "rf",
+                                             trControl = ctrl,
+                                             tuneLength = 9,
+                                             ntrees = 1000,
+                                             metric = "Accuracy")
+
+
+randomForest_allClinical_results_10FoldCV_2 <- as.data.frame(randomForest_allClinical_10FoldCV_2$results)
+
+randomForest_allClinical_maxAccuracies_10FoldCV_2 <- randomForest_allClinical_results_10FoldCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_allClinical_maxAccuracies_10FoldCV <- rbind(randomForest_allClinical_maxAccuracies_10FoldCV, 
+                                                         randomForest_allClinical_maxAccuracies_10FoldCV_2)
+
+#LOGISTIC REGRESSION
+logisticRegression_allClinical_10FoldCV_2 <- train(response~.,
+                                                   data = SpinaleClinical_10FOLDCV_2,
+                                                   family = "binomial",
+                                                   method = "glm",
+                                                   trControl = ctrl,
+                                                   metric = "Accuracy")
+
+logisticRegression_allClinical_results_10FoldCV_2 <- as.data.frame(logisticRegression_allClinical_10FoldCV_2$results)
+
+logisticRegression_allClinical_maxAccuracies_10FoldCV <- rbind(logisticRegression_allClinical_maxAccuracies_10FoldCV,
+                                                               logisticRegression_allClinical_results_10FoldCV_2)
+
+#K-NEAREST NEIGHBORS
+KNN_allClinical_10FoldCV_2 <-  train(response ~.,
+                                     SpinaleClinical_10FOLDCV_2,
+                                          method = "knn",
+                                          trControl = ctrl,
+                                          tuneLength = 20,
+                                          metric = "Accuracy")
+
+KNN_allClinical_results_10FoldCV_2 <- as.data.frame(KNN_allClinical_10FoldCV_2$results)
+
+KNN_allClinical_maxAccuracies_10FoldCV_2 <- KNN_allClinical_results_10FoldCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_allClinical_maxAccuracies_10FoldCV <- rbind(KNN_allClinical_maxAccuracies_10FoldCV, 
+                                                KNN_allClinical_maxAccuracies_10FoldCV_2)
+
+#LINEAR SVM
+LinearSVM_allClinical_10FoldCV_2 <- train(response~.,
+                                          SpinaleClinical_10FOLDCV_2,
+                                               method = "svmLinear",
+                                               trControl = ctrl,
+                                               tuneGrid = grid,
+                                               metric = "Accuracy")
+
+LinearSVM_allClinical_results_10FoldCV_2 <- as.data.frame(LinearSVM_allClinical_10FoldCV_2$results)
+
+LinearSVM_allClinical_maxAccuracies_10FoldCV_2 <- LinearSVM_allClinical_results_10FoldCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_allClinical_maxAccuracies_10FoldCV <- rbind(LinearSVM_allClinical_maxAccuracies_10FoldCV, 
+                                                          LinearSVM_allClinical_maxAccuracies_10FoldCV_2)
+
+#RADIAL SVM
+RadialSVM_allClinical_10FoldCV_2 <- train(response~.,
+                                          SpinaleClinical_10FOLDCV_2,
+                                          method = "svmRadial",
+                                          trControl = ctrl,
+                                          tuneGrid = grid_radial,
+                                          metric = "Accuracy")
+
+RadialSVM_allClinical_results_10FoldCV_2 <- as.data.frame(RadialSVM_allClinical_10FoldCV_2$results)
+
+RadialSVM_allClinical_maxAccuracies_10FoldCV_2 <- RadialSVM_allClinical_results_10FoldCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_allClinical_maxAccuracies_10FoldCV <- rbind(RadialSVM_allClinical_maxAccuracies_10FoldCV, 
+                                                      RadialSVM_allClinical_maxAccuracies_10FoldCV_2)
+
+#Third 10-Fold CV
+SpinaleClinical_10FOLDCV_3 <- Spinale_clinical_training[sample(nrow(Spinale_clinical_training)),]
+
+#RANDOM FOREST
+randomForest_allClinical_10FoldCV_3 <- train(response~.,
+                                             SpinaleClinical_10FOLDCV_3,
+                                             method = "rf",
+                                             trControl = ctrl,
+                                             tuneLength = 9,
+                                             ntrees = 1000,
+                                             metric = "Accuracy")
+
+
+randomForest_allClinical_results_10FoldCV_3 <- as.data.frame(randomForest_allClinical_10FoldCV_3$results)
+
+randomForest_allClinical_maxAccuracies_10FoldCV_3 <- randomForest_allClinical_results_10FoldCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_allClinical_maxAccuracies_10FoldCV <- rbind(randomForest_allClinical_maxAccuracies_10FoldCV, 
+                                                         randomForest_allClinical_maxAccuracies_10FoldCV_3)
+
+#LOGISTIC REGRESSION
+logisticRegression_allClinical_10FoldCV_3 <- train(response~.,
+                                                   data = SpinaleClinical_10FOLDCV_3,
+                                                   family = "binomial",
+                                                   method = "glm",
+                                                   trControl = ctrl,
+                                                   metric = "Accuracy")
+
+logisticRegression_allClinical_results_10FoldCV_3 <- as.data.frame(logisticRegression_allClinical_10FoldCV_3$results)
+
+logisticRegression_allClinical_maxAccuracies_10FoldCV <- rbind(logisticRegression_allClinical_maxAccuracies_10FoldCV,
+                                                               logisticRegression_allClinical_results_10FoldCV_3)
+
+#K-NEAREST NEIGHBORS
+KNN_allClinical_10FoldCV_3 <-  train(response ~.,
+                                     SpinaleClinical_10FOLDCV_3,
+                                     method = "knn",
+                                     trControl = ctrl,
+                                     tuneLength = 20,
+                                     metric = "Accuracy")
+
+KNN_allClinical_results_10FoldCV_3 <- as.data.frame(KNN_allClinical_10FoldCV_3$results)
+
+KNN_allClinical_maxAccuracies_10FoldCV_3 <- KNN_allClinical_results_10FoldCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_allClinical_maxAccuracies_10FoldCV <- rbind(KNN_allClinical_maxAccuracies_10FoldCV, 
+                                                KNN_allClinical_maxAccuracies_10FoldCV_3)
+
+#LINEAR SVM
+LinearSVM_allClinical_10FoldCV_3 <- train(response~.,
+                                          SpinaleClinical_10FOLDCV_3,
+                                          method = "svmLinear",
+                                          trControl = ctrl,
+                                          tuneGrid = grid,
+                                          metric = "Accuracy")
+
+LinearSVM_allClinical_results_10FoldCV_3 <- as.data.frame(LinearSVM_allClinical_10FoldCV_3$results)
+
+LinearSVM_allClinical_maxAccuracies_10FoldCV_3 <- LinearSVM_allClinical_results_10FoldCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_allClinical_maxAccuracies_10FoldCV <- rbind(LinearSVM_allClinical_maxAccuracies_10FoldCV, 
+                                                      LinearSVM_allClinical_maxAccuracies_10FoldCV_3)
+
+#RADIAL SVM
+RadialSVM_allClinical_10FoldCV_3 <- train(response~.,
+                                          SpinaleClinical_10FOLDCV_3,
+                                          method = "svmRadial",
+                                          trControl = ctrl,
+                                          tuneGrid = grid_radial,
+                                          metric = "Accuracy")
+
+RadialSVM_allClinical_results_10FoldCV_3 <- as.data.frame(RadialSVM_allClinical_10FoldCV_3$results)
+
+RadialSVM_allClinical_maxAccuracies_10FoldCV_3 <- RadialSVM_allClinical_results_10FoldCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_allClinical_maxAccuracies_10FoldCV <- rbind(RadialSVM_allClinical_maxAccuracies_10FoldCV, 
+                                                      RadialSVM_allClinical_maxAccuracies_10FoldCV_3)
+
+#Fourth 10-Fold CV
+SpinaleClinical_10FOLDCV_4 <- Spinale_clinical_training[sample(nrow(Spinale_clinical_training)),]
+
+#RANDOM FOREST
+randomForest_allClinical_10FoldCV_4 <- train(response~.,
+                                             SpinaleClinical_10FOLDCV_4,
+                                             method = "rf",
+                                             trControl = ctrl,
+                                             tuneLength = 9,
+                                             ntrees = 1000,
+                                             metric = "Accuracy")
+
+
+randomForest_allClinical_results_10FoldCV_4 <- as.data.frame(randomForest_allClinical_10FoldCV_4$results)
+
+randomForest_allClinical_maxAccuracies_10FoldCV_4 <- randomForest_allClinical_results_10FoldCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_allClinical_maxAccuracies_10FoldCV <- rbind(randomForest_allClinical_maxAccuracies_10FoldCV, 
+                                                         randomForest_allClinical_maxAccuracies_10FoldCV_4)
+
+#LOGISTIC REGRESSION
+logisticRegression_allClinical_10FoldCV_4 <- train(response~.,
+                                                   data = SpinaleClinical_10FOLDCV_4,
+                                                   family = "binomial",
+                                                   method = "glm",
+                                                   trControl = ctrl,
+                                                   metric = "Accuracy")
+
+logisticRegression_allClinical_results_10FoldCV_4 <- as.data.frame(logisticRegression_allClinical_10FoldCV_4$results)
+
+logisticRegression_allClinical_maxAccuracies_10FoldCV <- rbind(logisticRegression_allClinical_maxAccuracies_10FoldCV,
+                                                               logisticRegression_allClinical_results_10FoldCV_4)
+
+#K-NEAREST NEIGHBORS
+KNN_allClinical_10FoldCV_4 <-  train(response ~.,
+                                     SpinaleClinical_10FOLDCV_4,
+                                     method = "knn",
+                                     trControl = ctrl,
+                                     tuneLength = 20,
+                                     metric = "Accuracy")
+
+KNN_allClinical_results_10FoldCV_4 <- as.data.frame(KNN_allClinical_10FoldCV_4$results)
+
+KNN_allClinical_maxAccuracies_10FoldCV_4 <- KNN_allClinical_results_10FoldCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_allClinical_maxAccuracies_10FoldCV <- rbind(KNN_allClinical_maxAccuracies_10FoldCV, 
+                                                KNN_allClinical_maxAccuracies_10FoldCV_4)
+
+#LINEAR SVM
+LinearSVM_allClinical_10FoldCV_4 <- train(response~.,
+                                          SpinaleClinical_10FOLDCV_4,
+                                          method = "svmLinear",
+                                          trControl = ctrl,
+                                          tuneGrid = grid,
+                                          metric = "Accuracy")
+
+LinearSVM_allClinical_results_10FoldCV_4 <- as.data.frame(LinearSVM_allClinical_10FoldCV_4$results)
+
+LinearSVM_allClinical_maxAccuracies_10FoldCV_4 <- LinearSVM_allClinical_results_10FoldCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_allClinical_maxAccuracies_10FoldCV <- rbind(LinearSVM_allClinical_maxAccuracies_10FoldCV, 
+                                                      LinearSVM_allClinical_maxAccuracies_10FoldCV_4)
+
+#RADIAL SVM
+RadialSVM_allClinical_10FoldCV_4 <- train(response~.,
+                                          SpinaleClinical_10FOLDCV_4,
+                                          method = "svmRadial",
+                                          trControl = ctrl,
+                                          tuneGrid = grid_radial,
+                                          metric = "Accuracy")
+
+RadialSVM_allClinical_results_10FoldCV_4 <- as.data.frame(RadialSVM_allClinical_10FoldCV_4$results)
+
+RadialSVM_allClinical_maxAccuracies_10FoldCV_4 <- RadialSVM_allClinical_results_10FoldCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_allClinical_maxAccuracies_10FoldCV <- rbind(RadialSVM_allClinical_maxAccuracies_10FoldCV, 
+                                                      RadialSVM_allClinical_maxAccuracies_10FoldCV_4)
+
+#Fifth 10-Fold CV
+SpinaleClinical_10FOLDCV_5 <- Spinale_clinical_training[sample(nrow(Spinale_clinical_training)),]
+
+#RANDOM FOREST
+randomForest_allClinical_10FoldCV_5 <- train(response~.,
+                                             SpinaleClinical_10FOLDCV_5,
+                                             method = "rf",
+                                             trControl = ctrl,
+                                             tuneLength = 9,
+                                             ntrees = 1000,
+                                             metric = "Accuracy")
+
+
+randomForest_allClinical_results_10FoldCV_5 <- as.data.frame(randomForest_allClinical_10FoldCV_5$results)
+
+randomForest_allClinical_maxAccuracies_10FoldCV_5 <- randomForest_allClinical_results_10FoldCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_allClinical_maxAccuracies_10FoldCV <- rbind(randomForest_allClinical_maxAccuracies_10FoldCV, 
+                                                         randomForest_allClinical_maxAccuracies_10FoldCV_5)
+
+#LOGISTIC REGRESSION
+logisticRegression_allClinical_10FoldCV_5 <- train(response~.,
+                                                   data = SpinaleClinical_10FOLDCV_5,
+                                                   family = "binomial",
+                                                   method = "glm",
+                                                   trControl = ctrl,
+                                                   metric = "Accuracy")
+
+logisticRegression_allClinical_results_10FoldCV_5 <- as.data.frame(logisticRegression_allClinical_10FoldCV_5$results)
+
+logisticRegression_allClinical_maxAccuracies_10FoldCV <- rbind(logisticRegression_allClinical_maxAccuracies_10FoldCV,
+                                                               logisticRegression_allClinical_results_10FoldCV_5)
+
+#K-NEAREST NEIGHBORS
+KNN_allClinical_10FoldCV_5 <-  train(response ~.,
+                                     SpinaleClinical_10FOLDCV_5,
+                                     method = "knn",
+                                     trControl = ctrl,
+                                     tuneLength = 20,
+                                     metric = "Accuracy")
+
+KNN_allClinical_results_10FoldCV_5 <- as.data.frame(KNN_allClinical_10FoldCV_5$results)
+
+KNN_allClinical_maxAccuracies_10FoldCV_5 <- KNN_allClinical_results_10FoldCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_allClinical_maxAccuracies_10FoldCV <- rbind(KNN_allClinical_maxAccuracies_10FoldCV, 
+                                                KNN_allClinical_maxAccuracies_10FoldCV_5)
+
+#LINEAR SVM
+LinearSVM_allClinical_10FoldCV_5 <- train(response~.,
+                                          SpinaleClinical_10FOLDCV_5,
+                                          method = "svmLinear",
+                                          trControl = ctrl,
+                                          tuneGrid = grid,
+                                          metric = "Accuracy")
+
+LinearSVM_allClinical_results_10FoldCV_5 <- as.data.frame(LinearSVM_allClinical_10FoldCV_5$results)
+
+LinearSVM_allClinical_maxAccuracies_10FoldCV_5 <- LinearSVM_allClinical_results_10FoldCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_allClinical_maxAccuracies_10FoldCV <- rbind(LinearSVM_allClinical_maxAccuracies_10FoldCV, 
+                                                      LinearSVM_allClinical_maxAccuracies_10FoldCV_5)
+
+#RADIAL SVM
+RadialSVM_allClinical_10FoldCV_5 <- train(response~.,
+                                          SpinaleClinical_10FOLDCV_5,
+                                          method = "svmRadial",
+                                          trControl = ctrl,
+                                          tuneGrid = grid_radial,
+                                          metric = "Accuracy")
+
+RadialSVM_allClinical_results_10FoldCV_5 <- as.data.frame(RadialSVM_allClinical_10FoldCV_5$results)
+
+RadialSVM_allClinical_maxAccuracies_10FoldCV_5 <- RadialSVM_allClinical_results_10FoldCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_allClinical_maxAccuracies_10FoldCV <- rbind(RadialSVM_allClinical_maxAccuracies_10FoldCV, 
+                                                      RadialSVM_allClinical_maxAccuracies_10FoldCV_5)
 
 #------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
+#first 5 fold CV
+SpinaleClinical_5FOLDCV_1<- Spinale_clinical_training[sample(nrow(Spinale_clinical_training)),]
+
+#RANDOM FOREST
+
+randomForest_allClinical_5FoldCV_1 <- train(response~.,
+                                            SpinaleClinical_5FOLDCV_1,
+                                             method = "rf",
+                                             trControl = ctrl_5_fold_CV,
+                                             tuneLength = 9,
+                                             ntrees = 1000,
+                                             metric = "Accuracy")
+
+
+randomForest_allClinical_results_5FoldCV_1 <- as.data.frame(randomForest_allClinical_5FoldCV_1$results)
+
+randomForest_allClinical_maxAccuracies_5FoldCV <- randomForest_allClinical_results_5FoldCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#LOGISTIC REGRESSION
+logisticRegression_allClinical_5FoldCV_1 <- train(response~.,
+                                                   data = SpinaleClinical_5FOLDCV_1,
+                                                   family = "binomial",
+                                                   method = "glm",
+                                                   trControl = ctrl_5_fold_CV,
+                                                   metric = "Accuracy")
+
+logisticRegression_allClinical_results_5FoldCV_1 <- as.data.frame(logisticRegression_allClinical_5FoldCV_1$results)
+
+logisticRegression_allClinical_maxAccuracies_5FoldCV <- logisticRegression_allClinical_results_5FoldCV_1
+
+
+#K-NEAREST NEIGHBORS
+KNN_allClinical_5FoldCV_1 <-  train(response~.,
+                                     SpinaleClinical_5FOLDCV_1,
+                                     method = "knn",
+                                     trControl = ctrl_5_fold_CV,
+                                     tuneLength = 20,
+                                     metric = "Accuracy")
+
+KNN_allClinical_results_5FoldCV_1 <- as.data.frame(KNN_allClinical_5FoldCV_1$results)
+
+KNN_allClinical_maxAccuracies_5FoldCV <- KNN_allClinical_results_5FoldCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#LINEAR SVM
+LinearSVM_allClinical_5FoldCV_1 <- train(response~.,
+                                          SpinaleClinical_5FOLDCV_1,
+                                          method = "svmLinear",
+                                          trControl = ctrl_5_fold_CV,
+                                          tuneGrid = grid,
+                                          metric = "Accuracy")
+
+LinearSVM_allClinical_results_5FoldCV_1 <- as.data.frame(LinearSVM_allClinical_5FoldCV_1$results)
+
+LinearSVM_allClinical_maxAccuracies_5FoldCV <- LinearSVM_allClinical_results_5FoldCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#RADIAL SVM
+RadialSVM_allClinical_5FoldCV_1 <- train(response ~.,
+                                          SpinaleClinical_5FOLDCV_1,
+                                          method = "svmRadial",
+                                          trControl = ctrl_5_fold_CV,
+                                          tuneGrid = grid_radial,
+                                          metric = "Accuracy")
+
+RadialSVM_allClinical_results_5FoldCV_1 <- as.data.frame(RadialSVM_allClinical_5FoldCV_1$results)
+
+RadialSVM_allClinical_maxAccuracies_5FoldCV <- RadialSVM_allClinical_results_5FoldCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#Second 5-Fold CV
+SpinaleClinical_5FOLDCV_2<- Spinale_clinical_training[sample(nrow(Spinale_clinical_training)),]
+
+#RANDOM FOREST
+randomForest_allClinical_5FoldCV_2 <- train(response~.,
+                                             SpinaleClinical_5FOLDCV_2,
+                                             method = "rf",
+                                             trControl = ctrl_5_fold_CV,
+                                             tuneLength = 9,
+                                             ntrees = 1000,
+                                             metric = "Accuracy")
+
+
+randomForest_allClinical_results_5FoldCV_2 <- as.data.frame(randomForest_allClinical_5FoldCV_2$results)
+
+randomForest_allClinical_maxAccuracies_5FoldCV_2 <- randomForest_allClinical_results_5FoldCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_allClinical_maxAccuracies_5FoldCV <- rbind(randomForest_allClinical_maxAccuracies_5FoldCV, 
+                                                         randomForest_allClinical_maxAccuracies_5FoldCV_2)
+
+#LOGISTIC REGRESSION
+logisticRegression_allClinical_5FoldCV_2 <- train(response~.,
+                                                   data = SpinaleClinical_5FOLDCV_2,
+                                                   family = "binomial",
+                                                   method = "glm",
+                                                   trControl = ctrl_5_fold_CV,
+                                                   metric = "Accuracy")
+
+logisticRegression_allClinical_results_5FoldCV_2 <- as.data.frame(logisticRegression_allClinical_5FoldCV_2$results)
+
+logisticRegression_allClinical_maxAccuracies_5FoldCV <- rbind(logisticRegression_allClinical_maxAccuracies_5FoldCV,
+                                                               logisticRegression_allClinical_results_5FoldCV_2)
+
+#K-NEAREST NEIGHBORS
+KNN_allClinical_5FoldCV_2 <-  train(response ~.,
+                                     SpinaleClinical_5FOLDCV_2,
+                                     method = "knn",
+                                     trControl = ctrl_5_fold_CV,
+                                     tuneLength = 20,
+                                     metric = "Accuracy")
+
+KNN_allClinical_results_5FoldCV_2 <- as.data.frame(KNN_allClinical_5FoldCV_2$results)
+
+KNN_allClinical_maxAccuracies_5FoldCV_2 <- KNN_allClinical_results_5FoldCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_allClinical_maxAccuracies_5FoldCV <- rbind(KNN_allClinical_maxAccuracies_5FoldCV, 
+                                                KNN_allClinical_maxAccuracies_5FoldCV_2)
+
+#LINEAR SVM
+LinearSVM_allClinical_5FoldCV_2 <- train(response~.,
+                                          SpinaleClinical_5FOLDCV_2,
+                                          method = "svmLinear",
+                                          trControl = ctrl_5_fold_CV,
+                                          tuneGrid = grid,
+                                          metric = "Accuracy")
+
+LinearSVM_allClinical_results_5FoldCV_2 <- as.data.frame(LinearSVM_allClinical_5FoldCV_2$results)
+
+LinearSVM_allClinical_maxAccuracies_5FoldCV_2 <- LinearSVM_allClinical_results_5FoldCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_allClinical_maxAccuracies_5FoldCV <- rbind(LinearSVM_allClinical_maxAccuracies_5FoldCV, 
+                                                      LinearSVM_allClinical_maxAccuracies_5FoldCV_2)
+
+#RADIAL SVM
+RadialSVM_allClinical_5FoldCV_2 <- train(response~.,
+                                          SpinaleClinical_5FOLDCV_2,
+                                          method = "svmRadial",
+                                          trControl = ctrl_5_fold_CV,
+                                          tuneGrid = grid_radial,
+                                          metric = "Accuracy")
+
+RadialSVM_allClinical_results_5FoldCV_2 <- as.data.frame(RadialSVM_allClinical_5FoldCV_2$results)
+
+RadialSVM_allClinical_maxAccuracies_5FoldCV_2 <- RadialSVM_allClinical_results_5FoldCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_allClinical_maxAccuracies_5FoldCV <- rbind(RadialSVM_allClinical_maxAccuracies_5FoldCV, 
+                                                      RadialSVM_allClinical_maxAccuracies_5FoldCV_2)
+
+#Third 5-Fold CV
+SpinaleClinical_5FOLDCV_3<- Spinale_clinical_training[sample(nrow(Spinale_clinical_training)),]
+
+#RANDOM FOREST
+randomForest_allClinical_5FoldCV_3 <- train(response~.,
+                                            SpinaleClinical_5FOLDCV_3,
+                                            method = "rf",
+                                            trControl = ctrl_5_fold_CV,
+                                            tuneLength = 9,
+                                            ntrees = 1000,
+                                            metric = "Accuracy")
+
+
+randomForest_allClinical_results_5FoldCV_3 <- as.data.frame(randomForest_allClinical_5FoldCV_3$results)
+
+randomForest_allClinical_maxAccuracies_5FoldCV_3 <- randomForest_allClinical_results_5FoldCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_allClinical_maxAccuracies_5FoldCV <- rbind(randomForest_allClinical_maxAccuracies_5FoldCV, 
+                                                        randomForest_allClinical_maxAccuracies_5FoldCV_3)
+
+#LOGISTIC REGRESSION
+logisticRegression_allClinical_5FoldCV_3 <- train(response~.,
+                                                  data = SpinaleClinical_5FOLDCV_3,
+                                                  family = "binomial",
+                                                  method = "glm",
+                                                  trControl = ctrl_5_fold_CV,
+                                                  metric = "Accuracy")
+
+logisticRegression_allClinical_results_5FoldCV_3 <- as.data.frame(logisticRegression_allClinical_5FoldCV_3$results)
+
+logisticRegression_allClinical_maxAccuracies_5FoldCV <- rbind(logisticRegression_allClinical_maxAccuracies_5FoldCV,
+                                                              logisticRegression_allClinical_results_5FoldCV_3)
+
+#K-NEAREST NEIGHBORS
+KNN_allClinical_5FoldCV_3 <-  train(response ~.,
+                                    SpinaleClinical_5FOLDCV_3,
+                                    method = "knn",
+                                    trControl = ctrl_5_fold_CV,
+                                    tuneLength = 20,
+                                    metric = "Accuracy")
+
+KNN_allClinical_results_5FoldCV_3 <- as.data.frame(KNN_allClinical_5FoldCV_3$results)
+
+KNN_allClinical_maxAccuracies_5FoldCV_3 <- KNN_allClinical_results_5FoldCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_allClinical_maxAccuracies_5FoldCV <- rbind(KNN_allClinical_maxAccuracies_5FoldCV, 
+                                               KNN_allClinical_maxAccuracies_5FoldCV_3)
+
+#LINEAR SVM
+LinearSVM_allClinical_5FoldCV_3 <- train(response~.,
+                                         SpinaleClinical_5FOLDCV_3,
+                                         method = "svmLinear",
+                                         trControl = ctrl_5_fold_CV,
+                                         tuneGrid = grid,
+                                         metric = "Accuracy")
+
+LinearSVM_allClinical_results_5FoldCV_3 <- as.data.frame(LinearSVM_allClinical_5FoldCV_3$results)
+
+LinearSVM_allClinical_maxAccuracies_5FoldCV_3 <- LinearSVM_allClinical_results_5FoldCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_allClinical_maxAccuracies_5FoldCV <- rbind(LinearSVM_allClinical_maxAccuracies_5FoldCV, 
+                                                     LinearSVM_allClinical_maxAccuracies_5FoldCV_3)
+
+#RADIAL SVM
+RadialSVM_allClinical_5FoldCV_3 <- train(response~.,
+                                         SpinaleClinical_5FOLDCV_3,
+                                         method = "svmRadial",
+                                         trControl = ctrl_5_fold_CV,
+                                         tuneGrid = grid_radial,
+                                         metric = "Accuracy")
+
+RadialSVM_allClinical_results_5FoldCV_3 <- as.data.frame(RadialSVM_allClinical_5FoldCV_3$results)
+
+RadialSVM_allClinical_maxAccuracies_5FoldCV_3 <- RadialSVM_allClinical_results_5FoldCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_allClinical_maxAccuracies_5FoldCV <- rbind(RadialSVM_allClinical_maxAccuracies_5FoldCV, 
+                                                     RadialSVM_allClinical_maxAccuracies_5FoldCV_3)
+
+#Fourth 5-Fold CV
+SpinaleClinical_5FOLDCV_4<- Spinale_clinical_training[sample(nrow(Spinale_clinical_training)),]
+
+#RANDOM FOREST
+randomForest_allClinical_5FoldCV_4 <- train(response~.,
+                                            SpinaleClinical_5FOLDCV_4,
+                                            method = "rf",
+                                            trControl = ctrl_5_fold_CV,
+                                            tuneLength = 9,
+                                            ntrees = 1000,
+                                            metric = "Accuracy")
+
+
+randomForest_allClinical_results_5FoldCV_4 <- as.data.frame(randomForest_allClinical_5FoldCV_4$results)
+
+randomForest_allClinical_maxAccuracies_5FoldCV_4 <- randomForest_allClinical_results_5FoldCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_allClinical_maxAccuracies_5FoldCV <- rbind(randomForest_allClinical_maxAccuracies_5FoldCV, 
+                                                        randomForest_allClinical_maxAccuracies_5FoldCV_4)
+
+#LOGISTIC REGRESSION
+logisticRegression_allClinical_5FoldCV_4 <- train(response~.,
+                                                  data = SpinaleClinical_5FOLDCV_4,
+                                                  family = "binomial",
+                                                  method = "glm",
+                                                  trControl = ctrl_5_fold_CV,
+                                                  metric = "Accuracy")
+
+logisticRegression_allClinical_results_5FoldCV_4 <- as.data.frame(logisticRegression_allClinical_5FoldCV_4$results)
+
+logisticRegression_allClinical_maxAccuracies_5FoldCV <- rbind(logisticRegression_allClinical_maxAccuracies_5FoldCV,
+                                                              logisticRegression_allClinical_results_5FoldCV_4)
+
+#K-NEAREST NEIGHBORS
+KNN_allClinical_5FoldCV_4 <-  train(response ~.,
+                                    SpinaleClinical_5FOLDCV_4,
+                                    method = "knn",
+                                    trControl = ctrl_5_fold_CV,
+                                    tuneLength = 20,
+                                    metric = "Accuracy")
+
+KNN_allClinical_results_5FoldCV_4 <- as.data.frame(KNN_allClinical_5FoldCV_4$results)
+
+KNN_allClinical_maxAccuracies_5FoldCV_4 <- KNN_allClinical_results_5FoldCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_allClinical_maxAccuracies_5FoldCV <- rbind(KNN_allClinical_maxAccuracies_5FoldCV, 
+                                               KNN_allClinical_maxAccuracies_5FoldCV_4)
+
+#LINEAR SVM
+LinearSVM_allClinical_5FoldCV_4 <- train(response~.,
+                                         SpinaleClinical_5FOLDCV_4,
+                                         method = "svmLinear",
+                                         trControl = ctrl_5_fold_CV,
+                                         tuneGrid = grid,
+                                         metric = "Accuracy")
+
+LinearSVM_allClinical_results_5FoldCV_4 <- as.data.frame(LinearSVM_allClinical_5FoldCV_4$results)
+
+LinearSVM_allClinical_maxAccuracies_5FoldCV_4 <- LinearSVM_allClinical_results_5FoldCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_allClinical_maxAccuracies_5FoldCV <- rbind(LinearSVM_allClinical_maxAccuracies_5FoldCV, 
+                                                     LinearSVM_allClinical_maxAccuracies_5FoldCV_4)
+
+#RADIAL SVM
+RadialSVM_allClinical_5FoldCV_4 <- train(response~.,
+                                         SpinaleClinical_5FOLDCV_4,
+                                         method = "svmRadial",
+                                         trControl = ctrl_5_fold_CV,
+                                         tuneGrid = grid_radial,
+                                         metric = "Accuracy")
+
+RadialSVM_allClinical_results_5FoldCV_4 <- as.data.frame(RadialSVM_allClinical_5FoldCV_4$results)
+
+RadialSVM_allClinical_maxAccuracies_5FoldCV_4 <- RadialSVM_allClinical_results_5FoldCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_allClinical_maxAccuracies_5FoldCV <- rbind(RadialSVM_allClinical_maxAccuracies_5FoldCV, 
+                                                     RadialSVM_allClinical_maxAccuracies_5FoldCV_4)
+
+#Fifth 5-Fold CV
+SpinaleClinical_5FOLDCV_5<- Spinale_clinical_training[sample(nrow(Spinale_clinical_training)),]
+
+#RANDOM FOREST
+randomForest_allClinical_5FoldCV_5 <- train(response~.,
+                                            SpinaleClinical_5FOLDCV_5,
+                                            method = "rf",
+                                            trControl = ctrl_5_fold_CV,
+                                            tuneLength = 9,
+                                            ntrees = 1000,
+                                            metric = "Accuracy")
+
+
+randomForest_allClinical_results_5FoldCV_5 <- as.data.frame(randomForest_allClinical_5FoldCV_5$results)
+
+randomForest_allClinical_maxAccuracies_5FoldCV_5 <- randomForest_allClinical_results_5FoldCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_allClinical_maxAccuracies_5FoldCV <- rbind(randomForest_allClinical_maxAccuracies_5FoldCV, 
+                                                        randomForest_allClinical_maxAccuracies_5FoldCV_5)
+
+#LOGISTIC REGRESSION
+logisticRegression_allClinical_5FoldCV_5 <- train(response~.,
+                                                  data = SpinaleClinical_5FOLDCV_5,
+                                                  family = "binomial",
+                                                  method = "glm",
+                                                  trControl = ctrl_5_fold_CV,
+                                                  metric = "Accuracy")
+
+logisticRegression_allClinical_results_5FoldCV_5 <- as.data.frame(logisticRegression_allClinical_5FoldCV_5$results)
+
+logisticRegression_allClinical_maxAccuracies_5FoldCV <- rbind(logisticRegression_allClinical_maxAccuracies_5FoldCV,
+                                                              logisticRegression_allClinical_results_5FoldCV_5)
+
+#K-NEAREST NEIGHBORS
+KNN_allClinical_5FoldCV_5 <-  train(response ~.,
+                                    SpinaleClinical_5FOLDCV_5,
+                                    method = "knn",
+                                    trControl = ctrl_5_fold_CV,
+                                    tuneLength = 20,
+                                    metric = "Accuracy")
+
+KNN_allClinical_results_5FoldCV_5 <- as.data.frame(KNN_allClinical_5FoldCV_5$results)
+
+KNN_allClinical_maxAccuracies_5FoldCV_5 <- KNN_allClinical_results_5FoldCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_allClinical_maxAccuracies_5FoldCV <- rbind(KNN_allClinical_maxAccuracies_5FoldCV, 
+                                               KNN_allClinical_maxAccuracies_5FoldCV_5)
+
+#LINEAR SVM
+LinearSVM_allClinical_5FoldCV_5 <- train(response~.,
+                                         SpinaleClinical_5FOLDCV_5,
+                                         method = "svmLinear",
+                                         trControl = ctrl_5_fold_CV,
+                                         tuneGrid = grid,
+                                         metric = "Accuracy")
+
+LinearSVM_allClinical_results_5FoldCV_5 <- as.data.frame(LinearSVM_allClinical_5FoldCV_5$results)
+
+LinearSVM_allClinical_maxAccuracies_5FoldCV_5 <- LinearSVM_allClinical_results_5FoldCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_allClinical_maxAccuracies_5FoldCV <- rbind(LinearSVM_allClinical_maxAccuracies_5FoldCV, 
+                                                     LinearSVM_allClinical_maxAccuracies_5FoldCV_5)
+
+#RADIAL SVM
+RadialSVM_allClinical_5FoldCV_5 <- train(response~.,
+                                         SpinaleClinical_5FOLDCV_5,
+                                         method = "svmRadial",
+                                         trControl = ctrl_5_fold_CV,
+                                         tuneGrid = grid_radial,
+                                         metric = "Accuracy")
+
+RadialSVM_allClinical_results_5FoldCV_5 <- as.data.frame(RadialSVM_allClinical_5FoldCV_5$results)
+
+RadialSVM_allClinical_maxAccuracies_5FoldCV_5 <- RadialSVM_allClinical_results_5FoldCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_allClinical_maxAccuracies_5FoldCV <- rbind(RadialSVM_allClinical_maxAccuracies_5FoldCV, 
+                                                     RadialSVM_allClinical_maxAccuracies_5FoldCV_5)
+
+#---------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------
+#now we do combined biochemical and clinical -- we do all the variables first then
+#the relevant ones
+indexes_for_both <- createDataPartition(Spinale_all_standardized$response,
+                                            times = 1,
+                                            p = 0.7,
+                                            list = FALSE)
+Spinale_both_training <- Spinale_all_standardized[indexes_for_both,]
+Spinale_both_test <- Spinale_all_standardized[-indexes_for_both,]
+
+SpinaleAll_10FOLDCV_1<- Spinale_both_training[sample(nrow(Spinale_both_training)),]
+
+#RANDOM FOREST
+
+randomForest_All_10FoldCV_1 <- train(response~.,
+                                             SpinaleAll_10FOLDCV_1,
+                                             method = "rf",
+                                             trControl = ctrl,
+                                             tuneLength = 21,
+                                             ntrees = 1000,
+                                             metric = "Accuracy")
+
+
+randomForest_all_results_10FoldCV_1 <- as.data.frame(randomForest_All_10FoldCV_1$results)
+
+randomForest_all_maxAccuracies_10FoldCV <- randomForest_all_results_10FoldCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#LOGISTIC REGRESSION
+logisticRegression_all_10FoldCV_1 <- train(response~.,
+                                           SpinaleAll_10FOLDCV_1,
+                                           family = "binomial",
+                                           method = "glm",
+                                           trControl = ctrl,
+                                           metric = "accuracy")
+
+logisticRegression_all_results_10FoldCV_1 <- as.data.frame(logisticRegression_all_10FoldCV_1$results)
+
+logisticRegression_allClinical_maxAccuracies_10FoldCV <- logisticRegression_all_results_10FoldCV_1
+
+#K-NEAREST NEIGHBORS
+KNN_all_10FOLDCV_1 <- train(response~.,
+                            SpinaleAll_10FOLDCV_1,
+                            method = "knn",
+                            trControl = ctrl,
+                            tuneLength = 20,
+                            metric = "Accuracy")
+
+KNN_all_results_10FoldCV_1 <- as.data.frame(KNN_all_10FOLDCV_1$results)
+
+KNN_all_maxAccuracies_10FoldCV <- KNN_all_results_10FoldCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#LINEAR SVM
+LinearSVM_all_10FoldCV_1 <- train(response~.,
+                                  SpinaleAll_10FOLDCV_1,
+                                  method = "svmLinear",
+                                  trControl = ctrl,
+                                  tuneGrid = grid,
+                                  metric = "Accuracy")
+
+LinearSVM_all_results_10FoldCV_1 <- as.data.frame(LinearSVM_all_10FoldCV_1$results)
+
+LinearSVM_all_maxAccuracies_10FoldCV <- LinearSVM_all_results_10FoldCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#Radial SVM
+RadialSVM_all_10FoldCV_1 <- train(response~.,
+                                  SpinaleAll_10FOLDCV_1,
+                                  method = "svmRadial",
+                                  trControl = ctrl,
+                                  tuneGrid = grid_radial,
+                                  metric = "Accuracy")
+
+RadialSVM_all_results_10FoldCV_1 <- as.data.frame(RadialSVM_all_10FoldCV_1$results)
+
+RadialSVM_all_maxAccuracies_10FoldCV <- RadialSVM_all_results_10FoldCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#Second 10-Fold CV
+SpinaleAll_10FOLDCV_2<- Spinale_both_training[sample(nrow(Spinale_both_training)),]
+
+#Random Forest
+randomForest_All_10FoldCV_2 <- train(response~.,
+                                     SpinaleAll_10FOLDCV_2,
+                                     method = "rf",
+                                     trControl = ctrl,
+                                     tuneLength = 21,
+                                     ntrees = 1000,
+                                     metric = "Accuracy")
+
+randomForest_all_results_10FoldCV_2 <- as.data.frame(randomForest_All_10FoldCV_2$results)
+
+randomForest_all_maxAccuracy_10FoldCV_2 <- randomForest_all_results_10FoldCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_all_maxAccuracies_10FoldCV <- rbind(randomForest_all_maxAccuracies_10FoldCV,
+                                                 randomForest_all_maxAccuracy_10FoldCV_2)
+
+#Logistic Regression
+logisticRegression_all_10FoldCV_2 <- train(response~.,
+                                           SpinaleAll_10FOLDCV_2,
+                                           family = "binomial",
+                                           method = "glm",
+                                           trControl = ctrl,
+                                           metric = "accuracy")
+
+logisticRegression_all_results_10FoldCV_2 <- as.data.frame(logisticRegression_all_10FoldCV_2$results)
+
+logisticRegression_allClinical_maxAccuracies_10FoldCV <- rbind(logisticRegression_allClinical_maxAccuracies_10FoldCV,
+                                                               logisticRegression_all_results_10FoldCV_2)
+
+#K-NEAREST NEIGHBORS
+
+KNN_all_10FOLDCV_2 <- train(response~.,
+                            SpinaleAll_10FOLDCV_2,
+                            method = "knn",
+                            trControl = ctrl,
+                            tuneLength = 20,
+                            metric = "Accuracy")
+
+KNN_all_results_10FoldCV_2 <- as.data.frame(KNN_all_10FOLDCV_2$results)
+
+KNN_all_maxAccuracy_10FoldCV_2 <- KNN_all_results_10FoldCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_all_maxAccuracies_10FoldCV <- rbind(KNN_all_maxAccuracies_10FoldCV,
+                                        KNN_all_maxAccuracy_10FoldCV_2)
+
+
+#LINEAR SVM
+LinearSVM_all_10FoldCV_2 <- train(response~.,
+                                  SpinaleAll_10FOLDCV_2,
+                                  method = "svmLinear",
+                                  trControl = ctrl,
+                                  tuneGrid = grid,
+                                  metric = "Accuracy")
+
+LinearSVM_all_results_10FoldCV_2 <- as.data.frame(LinearSVM_all_10FoldCV_2$results)
+
+LinearSVM_all_maxAccuracy_10FoldCV_2 <- LinearSVM_all_results_10FoldCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_all_maxAccuracies_10FoldCV <- rbind(LinearSVM_all_maxAccuracies_10FoldCV, 
+                                              LinearSVM_all_maxAccuracy_10FoldCV_2)
+
+#RADIAL SVM
+RadialSVM_all_10FoldCV_2 <- train(response~.,
+                                  SpinaleAll_10FOLDCV_2,
+                                  method = "svmRadial",
+                                  trControl = ctrl,
+                                  tuneGrid = grid_radial,
+                                  metric = "Accuracy")
+
+RadialSVM_all_results_10FoldCV_2 <- as.data.frame(RadialSVM_all_10FoldCV_2$results)
+
+RadialSVM_all_maxAccuracy_10FoldCV_2 <- RadialSVM_all_results_10FoldCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_all_maxAccuracies_10FoldCV <- rbind(RadialSVM_all_maxAccuracies_10FoldCV, 
+                                              RadialSVM_all_maxAccuracy_10FoldCV_2)
+
+#Third 10-Fold CV
+SpinaleAll_10FOLDCV_3<- Spinale_both_training[sample(nrow(Spinale_both_training)),]
+
+#RANDOM FOREST
+
+randomForest_All_10FoldCV_3 <- train(response~.,
+                                     SpinaleAll_10FOLDCV_3,
+                                     method = "rf",
+                                     trControl = ctrl,
+                                     tuneLength = 21,
+                                     ntrees = 1000,
+                                     metric = "Accuracy")
+
+randomForest_all_results_10FoldCV_3 <- as.data.frame(randomForest_All_10FoldCV_3$results)
+
+randomForest_all_maxAccuracy_10FoldCV_3 <- randomForest_all_results_10FoldCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_all_maxAccuracies_10FoldCV <- rbind(randomForest_all_maxAccuracies_10FoldCV,
+                                                 randomForest_all_maxAccuracy_10FoldCV_3)
+
+#LOGISTIC REGRESSION
+logisticRegression_all_10FoldCV_3 <- train(response~.,
+                                           SpinaleAll_10FOLDCV_3,
+                                           family = "binomial",
+                                           method = "glm",
+                                           trControl = ctrl,
+                                           metric = "accuracy")
+
+logisticRegression_all_results_10FoldCV_3 <- as.data.frame(logisticRegression_all_10FoldCV_3$results)
+
+logisticRegression_allClinical_maxAccuracies_10FoldCV <- rbind(logisticRegression_allClinical_maxAccuracies_10FoldCV,
+                                                               logisticRegression_all_results_10FoldCV_3)
+
+#K-NEAREST NEIGHBORS
+KNN_all_10FOLDCV_3 <- train(response~.,
+                            SpinaleAll_10FOLDCV_3,
+                            method = "knn",
+                            trControl = ctrl,
+                            tuneLength = 20,
+                            metric = "Accuracy")
+
+KNN_all_results_10FoldCV_3 <- as.data.frame(KNN_all_10FOLDCV_3$results)
+
+KNN_all_maxAccuracy_10FoldCV_3 <- KNN_all_results_10FoldCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_all_maxAccuracies_10FoldCV <- rbind(KNN_all_maxAccuracies_10FoldCV,
+                                        KNN_all_maxAccuracy_10FoldCV_3)
+
+#LINEAR SVM
+LinearSVM_all_10FoldCV_3 <- train(response~.,
+                                  SpinaleAll_10FOLDCV_3,
+                                  method = "svmLinear",
+                                  trControl = ctrl,
+                                  tuneGrid = grid,
+                                  metric = "Accuracy")
+
+LinearSVM_all_results_10FoldCV_3 <- as.data.frame(LinearSVM_all_10FoldCV_3$results)
+
+LinearSVM_all_maxAccuracy_10FoldCV_3 <- LinearSVM_all_results_10FoldCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_all_maxAccuracies_10FoldCV <- rbind(LinearSVM_all_maxAccuracies_10FoldCV, 
+                                              LinearSVM_all_maxAccuracy_10FoldCV_3)
+
+#RADIAL SVM
+RadialSVM_all_10FoldCV_3 <- train(response~.,
+                                  SpinaleAll_10FOLDCV_3,
+                                  method = "svmRadial",
+                                  trControl = ctrl,
+                                  tuneGrid = grid_radial,
+                                  metric = "Accuracy")
+
+RadialSVM_all_results_10FoldCV_3 <- as.data.frame(RadialSVM_all_10FoldCV_3$results)
+
+RadialSVM_all_maxAccuracy_10FoldCV_3 <- RadialSVM_all_results_10FoldCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_all_maxAccuracies_10FoldCV <- rbind(RadialSVM_all_maxAccuracies_10FoldCV, 
+                                              RadialSVM_all_maxAccuracy_10FoldCV_3)
+
+#Fourth 10-FOLD CV
+SpinaleAll_10FOLDCV_4<- Spinale_both_training[sample(nrow(Spinale_both_training)),]
+
+#RANDOM FOREST
+
+randomForest_All_10FoldCV_4 <- train(response~.,
+                                     SpinaleAll_10FOLDCV_4,
+                                     method = "rf",
+                                     trControl = ctrl,
+                                     tuneLength = 21,
+                                     ntrees = 1000,
+                                     metric = "Accuracy")
+
+randomForest_all_results_10FoldCV_4 <- as.data.frame(randomForest_All_10FoldCV_4$results)
+
+randomForest_all_maxAccuracy_10FoldCV_4 <- randomForest_all_results_10FoldCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_all_maxAccuracies_10FoldCV <- rbind(randomForest_all_maxAccuracies_10FoldCV,
+                                                 randomForest_all_maxAccuracy_10FoldCV_4)
+
+#LOGISTIC REGRESSION
+logisticRegression_all_10FoldCV_4 <- train(response~.,
+                                           SpinaleAll_10FOLDCV_4,
+                                           family = "binomial",
+                                           method = "glm",
+                                           trControl = ctrl,
+                                           metric = "accuracy")
+
+logisticRegression_all_results_10FoldCV_4 <- as.data.frame(logisticRegression_all_10FoldCV_4$results)
+
+logisticRegression_allClinical_maxAccuracies_10FoldCV <- rbind(logisticRegression_allClinical_maxAccuracies_10FoldCV,
+                                                               logisticRegression_all_results_10FoldCV_4)
+
+#K-NEAREST NEIGHBORS
+KNN_all_10FOLDCV_4 <- train(response~.,
+                            SpinaleAll_10FOLDCV_4,
+                            method = "knn",
+                            trControl = ctrl,
+                            tuneLength = 20,
+                            metric = "Accuracy")
+
+KNN_all_results_10FoldCV_4 <- as.data.frame(KNN_all_10FOLDCV_4$results)
+
+KNN_all_maxAccuracy_10FoldCV_4 <- KNN_all_results_10FoldCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_all_maxAccuracies_10FoldCV <- rbind(KNN_all_maxAccuracies_10FoldCV,
+                                        KNN_all_maxAccuracy_10FoldCV_4)
+
+#LINEAR SVM
+LinearSVM_all_10FoldCV_4 <- train(response~.,
+                                  SpinaleAll_10FOLDCV_4,
+                                  method = "svmLinear",
+                                  trControl = ctrl,
+                                  tuneGrid = grid,
+                                  metric = "Accuracy")
+
+LinearSVM_all_results_10FoldCV_4 <- as.data.frame(LinearSVM_all_10FoldCV_4$results)
+
+LinearSVM_all_maxAccuracy_10FoldCV_4 <- LinearSVM_all_results_10FoldCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_all_maxAccuracies_10FoldCV <- rbind(LinearSVM_all_maxAccuracies_10FoldCV, 
+                                              LinearSVM_all_maxAccuracy_10FoldCV_4)
+
+#RADIAL SVM
+RadialSVM_all_10FoldCV_4 <- train(response~.,
+                                  SpinaleAll_10FOLDCV_4,
+                                  method = "svmRadial",
+                                  trControl = ctrl,
+                                  tuneGrid = grid_radial,
+                                  metric = "Accuracy")
+
+RadialSVM_all_results_10FoldCV_4 <- as.data.frame(RadialSVM_all_10FoldCV_4$results)
+
+RadialSVM_all_maxAccuracy_10FoldCV_4 <- RadialSVM_all_results_10FoldCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_all_maxAccuracies_10FoldCV <- rbind(RadialSVM_all_maxAccuracies_10FoldCV, 
+                                              RadialSVM_all_maxAccuracy_10FoldCV_4)
+
+#Fifth 10-FOLD CV
+SpinaleAll_10FOLDCV_5<- Spinale_both_training[sample(nrow(Spinale_both_training)),]
+
+#RANDOM FOREST
+
+randomForest_All_10FoldCV_5 <- train(response~.,
+                                     SpinaleAll_10FOLDCV_5,
+                                     method = "rf",
+                                     trControl = ctrl,
+                                     tuneLength = 21,
+                                     ntrees = 1000,
+                                     metric = "Accuracy")
+
+randomForest_all_results_10FoldCV_5 <- as.data.frame(randomForest_All_10FoldCV_5$results)
+
+randomForest_all_maxAccuracy_10FoldCV_5 <- randomForest_all_results_10FoldCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_all_maxAccuracies_10FoldCV <- rbind(randomForest_all_maxAccuracies_10FoldCV,
+                                                 randomForest_all_maxAccuracy_10FoldCV_5)
+
+#LOGISTIC REGRESSION
+logisticRegression_all_10FoldCV_5 <- train(response~.,
+                                           SpinaleAll_10FOLDCV_5,
+                                           family = "binomial",
+                                           method = "glm",
+                                           trControl = ctrl,
+                                           metric = "accuracy")
+
+logisticRegression_all_results_10FoldCV_5 <- as.data.frame(logisticRegression_all_10FoldCV_5$results)
+
+logisticRegression_allClinical_maxAccuracies_10FoldCV <- rbind(logisticRegression_allClinical_maxAccuracies_10FoldCV,
+                                                               logisticRegression_all_results_10FoldCV_5)
+
+#K-NEAREST NEIGHBORS
+KNN_all_10FOLDCV_5 <- train(response~.,
+                            SpinaleAll_10FOLDCV_5,
+                            method = "knn",
+                            trControl = ctrl,
+                            tuneLength = 20,
+                            metric = "Accuracy")
+
+KNN_all_results_10FoldCV_5 <- as.data.frame(KNN_all_10FOLDCV_5$results)
+
+KNN_all_maxAccuracy_10FoldCV_5 <- KNN_all_results_10FoldCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_all_maxAccuracies_10FoldCV <- rbind(KNN_all_maxAccuracies_10FoldCV,
+                                        KNN_all_maxAccuracy_10FoldCV_5)
+
+#LINEAR SVM
+LinearSVM_all_10FoldCV_5 <- train(response~.,
+                                  SpinaleAll_10FOLDCV_5,
+                                  method = "svmLinear",
+                                  trControl = ctrl,
+                                  tuneGrid = grid,
+                                  metric = "Accuracy")
+
+LinearSVM_all_results_10FoldCV_5 <- as.data.frame(LinearSVM_all_10FoldCV_5$results)
+
+LinearSVM_all_maxAccuracy_10FoldCV_5 <- LinearSVM_all_results_10FoldCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_all_maxAccuracies_10FoldCV <- rbind(LinearSVM_all_maxAccuracies_10FoldCV, 
+                                              LinearSVM_all_maxAccuracy_10FoldCV_5)
+
+#RADIAL SVM
+RadialSVM_all_10FoldCV_5 <- train(response~.,
+                                  SpinaleAll_10FOLDCV_5,
+                                  method = "svmRadial",
+                                  trControl = ctrl,
+                                  tuneGrid = grid_radial,
+                                  metric = "Accuracy")
+
+RadialSVM_all_results_10FoldCV_5 <- as.data.frame(RadialSVM_all_10FoldCV_5$results)
+
+RadialSVM_all_maxAccuracy_10FoldCV_5 <- RadialSVM_all_results_10FoldCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_all_maxAccuracies_10FoldCV <- rbind(RadialSVM_all_maxAccuracies_10FoldCV, 
+                                              RadialSVM_all_maxAccuracy_10FoldCV_5)
+
+
+#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+
+#first 5 fold CV
+SpinaleAll_5FOLDCV_1<- Spinale_both_training[sample(nrow(Spinale_both_training)),]
+
+#RANDOM FOREST
+
+randomForest_All_5FoldCV_1 <- train(response~.,
+                                    SpinaleAll_5FOLDCV_1,
+                                            method = "rf",
+                                            trControl = ctrl_5_fold_CV,
+                                            tuneLength = 9,
+                                            ntrees = 1000,
+                                            metric = "Accuracy")
+
+
+randomForest_all_results_5FoldCV_1 <- as.data.frame(randomForest_All_5FoldCV_1$results)
+
+randomForest_all_maxAccuracies_5FoldCV <- randomForest_all_results_5FoldCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#LOGISTIC REGRESSION
+logisticRegression_All_5FoldCV_1 <- train(response~.,
+                                    data = SpinaleAll_5FOLDCV_1,
+                                    family = "binomial",
+                                    method = "glm",
+                                    trControl = ctrl_5_fold_CV,
+                                    metric = "Accuracy")
+
+logisticRegression_all_results_5FoldCV_1 <- as.data.frame(logisticRegression_All_5FoldCV_1$results)
+
+logisticRegression_all_maxAccuracies_5FoldCV <- logisticRegression_all_results_5FoldCV_1
+
+
+#K-NEAREST NEIGHBORS
+KNN_all_5FoldCV_1 <-  train(response~.,
+                                    SpinaleClinical_5FOLDCV_1,
+                                    method = "knn",
+                                    trControl = ctrl_5_fold_CV,
+                                    tuneLength = 20,
+                                    metric = "Accuracy")
+
+KNN_all_results_5FoldCV_1 <- as.data.frame(KNN_all_5FoldCV_1$results)
+
+KNN_all_maxAccuracies_5FoldCV <- KNN_all_results_5FoldCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#LINEAR SVM
+LinearSVM_all_5FoldCV_1 <- train(response~.,
+                                  SpinaleClinical_5FOLDCV_1,
+                                         method = "svmLinear",
+                                         trControl = ctrl_5_fold_CV,
+                                         tuneGrid = grid,
+                                         metric = "Accuracy")
+
+LinearSVM_all_results_5FoldCV_1 <- as.data.frame(LinearSVM_all_5FoldCV_1$results)
+
+LinearSVM_all_maxAccuracies_5FoldCV <- LinearSVM_all_results_5FoldCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#RADIAL SVM
+RadialSVM_all_5FoldCV_1 <- train(response~.,
+                                 SpinaleClinical_5FOLDCV_1,
+                                  method = "svmRadial",
+                                  trControl = ctrl_5_fold_CV,
+                                  tuneGrid = grid_radial,
+                                  metric = "Accuracy")
+
+RadialSVM_all_results_5FoldCV_1 <- as.data.frame(RadialSVM_all_5FoldCV_1$results)
+
+RadialSVM_all_maxAccuracies_5FoldCV <- RadialSVM_all_results_5FoldCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#Second 5-Fold CV
+SpinaleAll_5FOLDCV_2<- Spinale_both_training[sample(nrow(Spinale_both_training)),]
+
+#RANDOM FOREST
+randomForest_All_5FoldCV_2 <- train(response~.,
+                                    SpinaleAll_5FOLDCV_2,
+                                     method = "rf",
+                                     trControl = ctrl_5_fold_CV,
+                                     tuneLength = 21,
+                                     ntrees = 1000,
+                                     metric = "Accuracy")
+
+randomForest_all_results_5FoldCV_2 <- as.data.frame(randomForest_All_5FoldCV_2$results)
+
+randomForest_all_maxAccuracy_5FoldCV_2 <- randomForest_all_results_5FoldCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_all_maxAccuracies_5FoldCV <- rbind(randomForest_all_maxAccuracies_5FoldCV,
+                                                 randomForest_all_maxAccuracy_5FoldCV_2)
+
+#LOGISTIC REGRESSION
+logisticRegression_all_5FoldCV_2 <- train(response~.,
+                                          SpinaleAll_5FOLDCV_2,
+                                           family = "binomial",
+                                           method = "glm",
+                                           trControl = ctrl_5_fold_CV,
+                                           metric = "accuracy")
+
+logisticRegression_all_results_5FoldCV_2 <- as.data.frame(logisticRegression_all_5FoldCV_2$results)
+
+logisticRegression_all_maxAccuracies_5FoldCV <- rbind(logisticRegression_all_maxAccuracies_5FoldCV,
+                                                               logisticRegression_all_results_5FoldCV_2)
+
+#K-NEAREST NEIGHBORS
+KNN_all_5FOLDCV_2 <- train(response~.,
+                           SpinaleAll_5FOLDCV_2,
+                            method = "knn",
+                            trControl = ctrl_5_fold_CV,
+                            tuneLength = 20,
+                            metric = "Accuracy")
+
+KNN_all_results_5FoldCV_2 <- as.data.frame(KNN_all_5FOLDCV_2$results)
+
+KNN_all_maxAccuracy_5FoldCV_2 <- KNN_all_results_5FoldCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_all_maxAccuracies_5FoldCV <- rbind(KNN_all_maxAccuracies_5FoldCV,
+                                        KNN_all_maxAccuracy_5FoldCV_2)
+
+#LINEAR SVM
+LinearSVM_all_5FOLDCV_2 <- train(response~.,
+                                 SpinaleAll_5FOLDCV_2,
+                                  method = "svmLinear",
+                                  trControl = ctrl_5_fold_CV,
+                                  tuneGrid = grid,
+                                  metric = "Accuracy")
+
+LinearSVM_all_results_5FoldCV_2 <- as.data.frame(LinearSVM_all_5FOLDCV_2$results)
+
+LinearSVM_all_maxAccuracy_5FoldCV_2 <- LinearSVM_all_results_5FoldCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_all_maxAccuracies_5FoldCV <- rbind(LinearSVM_all_maxAccuracies_5FoldCV, 
+                                             LinearSVM_all_maxAccuracy_5FoldCV_2)
+
+#RADIAL SVM
+RadialSVM_all_5FoldCV_2 <- train(response~.,
+                                 SpinaleAll_5FOLDCV_2,
+                                  method = "svmRadial",
+                                  trControl = ctrl_5_fold_CV,
+                                  tuneGrid = grid_radial,
+                                  metric = "Accuracy")
+
+RadialSVM_all_results_5FoldCV_2 <- as.data.frame(RadialSVM_all_5FoldCV_2$results)
+
+RadialSVM_all_maxAccuracy_5FoldCV_2 <- RadialSVM_all_results_5FoldCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_all_maxAccuracies_5FoldCV <- rbind(RadialSVM_all_maxAccuracies_5FoldCV, 
+                                              RadialSVM_all_maxAccuracy_5FoldCV_2)
+
+#Third 5-Fold CV
+SpinaleAll_5FOLDCV_3<- Spinale_both_training[sample(nrow(Spinale_both_training)),]
+
+#RANDOM FOREST
+randomForest_All_5FoldCV_3 <- train(response~.,
+                                    SpinaleAll_5FOLDCV_3,
+                                    method = "rf",
+                                    trControl = ctrl_5_fold_CV,
+                                    tuneLength = 21,
+                                    ntrees = 1000,
+                                    metric = "Accuracy")
+
+randomForest_all_results_5FoldCV_3 <- as.data.frame(randomForest_All_5FoldCV_3$results)
+
+randomForest_all_maxAccuracy_5FoldCV_3 <- randomForest_all_results_5FoldCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_all_maxAccuracies_5FoldCV <- rbind(randomForest_all_maxAccuracies_5FoldCV,
+                                                randomForest_all_maxAccuracy_5FoldCV_3)
+
+#LOGISTIC REGRESSION
+logisticRegression_all_5FoldCV_3 <- train(response~.,
+                                          SpinaleAll_5FOLDCV_3,
+                                          family = "binomial",
+                                          method = "glm",
+                                          trControl = ctrl_5_fold_CV,
+                                          metric = "accuracy")
+
+logisticRegression_all_results_5FoldCV_3 <- as.data.frame(logisticRegression_all_5FoldCV_3$results)
+
+logisticRegression_all_maxAccuracies_5FoldCV <- rbind(logisticRegression_all_maxAccuracies_5FoldCV,
+                                                      logisticRegression_all_results_5FoldCV_3)
+
+#K-NEAREST NEIGHBORS
+KNN_all_5FOLDCV_3 <- train(response~.,
+                           SpinaleAll_5FOLDCV_3,
+                           method = "knn",
+                           trControl = ctrl_5_fold_CV,
+                           tuneLength = 20,
+                           metric = "Accuracy")
+
+KNN_all_results_5FoldCV_3 <- as.data.frame(KNN_all_5FOLDCV_3$results)
+
+KNN_all_maxAccuracy_5FoldCV_3 <- KNN_all_results_5FoldCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_all_maxAccuracies_5FoldCV <- rbind(KNN_all_maxAccuracies_5FoldCV,
+                                       KNN_all_maxAccuracy_5FoldCV_3)
+
+#LINEAR SVM
+LinearSVM_all_5FOLDCV_3 <- train(response~.,
+                                 SpinaleAll_5FOLDCV_3,
+                                 method = "svmLinear",
+                                 trControl = ctrl_5_fold_CV,
+                                 tuneGrid = grid,
+                                 metric = "Accuracy")
+
+LinearSVM_all_results_5FoldCV_3 <- as.data.frame(LinearSVM_all_5FOLDCV_3$results)
+
+LinearSVM_all_maxAccuracy_5FoldCV_3 <- LinearSVM_all_results_5FoldCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_all_maxAccuracies_5FoldCV <- rbind(LinearSVM_all_maxAccuracies_5FoldCV, 
+                                             LinearSVM_all_maxAccuracy_5FoldCV_3)
+
+#RADIAL SVM
+RadialSVM_all_5FoldCV_3 <- train(response~.,
+                                 SpinaleAll_5FOLDCV_3,
+                                 method = "svmRadial",
+                                 trControl = ctrl_5_fold_CV,
+                                 tuneGrid = grid_radial,
+                                 metric = "Accuracy")
+
+RadialSVM_all_results_5FoldCV_3 <- as.data.frame(RadialSVM_all_5FoldCV_3$results)
+
+RadialSVM_all_maxAccuracy_5FoldCV_3 <- RadialSVM_all_results_5FoldCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_all_maxAccuracies_5FoldCV <- rbind(RadialSVM_all_maxAccuracies_5FoldCV, 
+                                             RadialSVM_all_maxAccuracy_5FoldCV_3)
+
+#Fourth 5-Fold CV
+SpinaleAll_5FOLDCV_4<- Spinale_both_training[sample(nrow(Spinale_both_training)),]
+
+#RANDOM FOREST
+randomForest_All_5FoldCV_4 <- train(response~.,
+                                    SpinaleAll_5FOLDCV_4,
+                                    method = "rf",
+                                    trControl = ctrl_5_fold_CV,
+                                    tuneLength = 21,
+                                    ntrees = 1000,
+                                    metric = "Accuracy")
+
+randomForest_all_results_5FoldCV_4 <- as.data.frame(randomForest_All_5FoldCV_4$results)
+
+randomForest_all_maxAccuracy_5FoldCV_4 <- randomForest_all_results_5FoldCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_all_maxAccuracies_5FoldCV <- rbind(randomForest_all_maxAccuracies_5FoldCV,
+                                                randomForest_all_maxAccuracy_5FoldCV_4)
+
+#LOGISTIC REGRESSION
+logisticRegression_all_5FoldCV_4 <- train(response~.,
+                                          SpinaleAll_5FOLDCV_4,
+                                          family = "binomial",
+                                          method = "glm",
+                                          trControl = ctrl_5_fold_CV,
+                                          metric = "accuracy")
+
+logisticRegression_all_results_5FoldCV_4 <- as.data.frame(logisticRegression_all_5FoldCV_4$results)
+
+logisticRegression_all_maxAccuracies_5FoldCV <- rbind(logisticRegression_all_maxAccuracies_5FoldCV,
+                                                      logisticRegression_all_results_5FoldCV_4)
+
+#K-NEAREST NEIGHBORS
+KNN_all_5FOLDCV_4 <- train(response~.,
+                           SpinaleAll_5FOLDCV_4,
+                           method = "knn",
+                           trControl = ctrl_5_fold_CV,
+                           tuneLength = 20,
+                           metric = "Accuracy")
+
+KNN_all_results_5FoldCV_4 <- as.data.frame(KNN_all_5FOLDCV_4$results)
+
+KNN_all_maxAccuracy_5FoldCV_4 <- KNN_all_results_5FoldCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_all_maxAccuracies_5FoldCV <- rbind(KNN_all_maxAccuracies_5FoldCV,
+                                       KNN_all_maxAccuracy_5FoldCV_4)
+
+#LINEAR SVM
+LinearSVM_all_5FOLDCV_4 <- train(response~.,
+                                 SpinaleAll_5FOLDCV_4,
+                                 method = "svmLinear",
+                                 trControl = ctrl_5_fold_CV,
+                                 tuneGrid = grid,
+                                 metric = "Accuracy")
+
+LinearSVM_all_results_5FoldCV_4 <- as.data.frame(LinearSVM_all_5FOLDCV_4$results)
+
+LinearSVM_all_maxAccuracy_5FoldCV_4 <- LinearSVM_all_results_5FoldCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_all_maxAccuracies_5FoldCV <- rbind(LinearSVM_all_maxAccuracies_5FoldCV, 
+                                             LinearSVM_all_maxAccuracy_5FoldCV_4)
+
+#RADIAL SVM
+RadialSVM_all_5FoldCV_4 <- train(response~.,
+                                 SpinaleAll_5FOLDCV_4,
+                                 method = "svmRadial",
+                                 trControl = ctrl_5_fold_CV,
+                                 tuneGrid = grid_radial,
+                                 metric = "Accuracy")
+
+RadialSVM_all_results_5FoldCV_4 <- as.data.frame(RadialSVM_all_5FoldCV_4$results)
+
+RadialSVM_all_maxAccuracy_5FoldCV_4 <- RadialSVM_all_results_5FoldCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_all_maxAccuracies_5FoldCV <- rbind(RadialSVM_all_maxAccuracies_5FoldCV, 
+                                             RadialSVM_all_maxAccuracy_5FoldCV_4)
+
+#Fifth 5-Fold CV
+SpinaleAll_5FOLDCV_5<- Spinale_both_training[sample(nrow(Spinale_both_training)),]
+
+#RANDOM FOREST
+randomForest_All_5FoldCV_5 <- train(response~.,
+                                    SpinaleAll_5FOLDCV_5,
+                                    method = "rf",
+                                    trControl = ctrl_5_fold_CV,
+                                    tuneLength = 21,
+                                    ntrees = 1000,
+                                    metric = "Accuracy")
+
+randomForest_all_results_5FoldCV_5 <- as.data.frame(randomForest_All_5FoldCV_5$results)
+
+randomForest_all_maxAccuracy_5FoldCV_5 <- randomForest_all_results_5FoldCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_all_maxAccuracies_5FoldCV <- rbind(randomForest_all_maxAccuracies_5FoldCV,
+                                                randomForest_all_maxAccuracy_5FoldCV_5)
+
+#LOGISTIC REGRESSION
+logisticRegression_all_5FoldCV_5 <- train(response~.,
+                                          SpinaleAll_5FOLDCV_5,
+                                          family = "binomial",
+                                          method = "glm",
+                                          trControl = ctrl_5_fold_CV,
+                                          metric = "accuracy")
+
+logisticRegression_all_results_5FoldCV_5 <- as.data.frame(logisticRegression_all_5FoldCV_5$results)
+
+logisticRegression_all_maxAccuracies_5FoldCV <- rbind(logisticRegression_all_maxAccuracies_5FoldCV,
+                                                      logisticRegression_all_results_5FoldCV_5)
+
+#K-NEAREST NEIGHBORS
+KNN_all_5FOLDCV_5 <- train(response~.,
+                           SpinaleAll_5FOLDCV_5,
+                           method = "knn",
+                           trControl = ctrl_5_fold_CV,
+                           tuneLength = 20,
+                           metric = "Accuracy")
+
+KNN_all_results_5FoldCV_5 <- as.data.frame(KNN_all_5FOLDCV_5$results)
+
+KNN_all_maxAccuracy_5FoldCV_5 <- KNN_all_results_5FoldCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_all_maxAccuracies_5FoldCV <- rbind(KNN_all_maxAccuracies_5FoldCV,
+                                       KNN_all_maxAccuracy_5FoldCV_5)
+
+#LINEAR SVM
+LinearSVM_all_5FOLDCV_5 <- train(response~.,
+                                 SpinaleAll_5FOLDCV_5,
+                                 method = "svmLinear",
+                                 trControl = ctrl_5_fold_CV,
+                                 tuneGrid = grid,
+                                 metric = "Accuracy")
+
+LinearSVM_all_results_5FoldCV_5 <- as.data.frame(LinearSVM_all_5FOLDCV_5$results)
+
+LinearSVM_all_maxAccuracy_5FoldCV_5 <- LinearSVM_all_results_5FoldCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_all_maxAccuracies_5FoldCV <- rbind(LinearSVM_all_maxAccuracies_5FoldCV, 
+                                             LinearSVM_all_maxAccuracy_5FoldCV_5)
+
+#RADIAL SVM
+RadialSVM_all_5FoldCV_5 <- train(response~.,
+                                 SpinaleAll_5FOLDCV_5,
+                                 method = "svmRadial",
+                                 trControl = ctrl_5_fold_CV,
+                                 tuneGrid = grid_radial,
+                                 metric = "Accuracy")
+
+RadialSVM_all_results_5FoldCV_5 <- as.data.frame(RadialSVM_all_5FoldCV_5$results)
+
+RadialSVM_all_maxAccuracy_5FoldCV_5 <- RadialSVM_all_results_5FoldCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_all_maxAccuracies_5FoldCV <- rbind(RadialSVM_all_maxAccuracies_5FoldCV, 
+                                             RadialSVM_all_maxAccuracy_5FoldCV_5)
+
+#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+#10-Fold CV
+SpinaleAll_10FOLDCV_1<- Spinale_both_training[sample(nrow(Spinale_both_training)),]
+
+#RANDOM FOREST
+
+randomForest_AllImportantVariables_10FoldCV_1 <- train(response~ Stretch_standardized + ST2_standardized +
+                                      EjectionFraction_standardized + TIFRII_standardized + 
+                                      LVESV_standardized + CRP_standardized + BNP_standardized,
+                                    SpinaleAll_10FOLDCV_1,
+                                     method = "rf",
+                                     trControl = ctrl,
+                                     tuneLength = 7,
+                                     ntrees = 1000,
+                                     metric = "Accuracy")
+
+
+randomForest_allImportantVariables_results_10FoldCV_1 <- as.data.frame(randomForest_AllImportantVariables_10FoldCV_1$results)
+
+randomForest_allImportantVariables_maxAccuracies_10FoldCV <- randomForest_allImportantVariables_results_10FoldCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#LOGISTIC REGRESSION
+logisticRegression_AllImportantVariables_10FoldCV_1 <- train(response~Stretch_standardized + ST2_standardized +
+                                             EjectionFraction_standardized + TIFRII_standardized + 
+                                             LVESV_standardized + CRP_standardized + BNP_standardized,
+                                           SpinaleAll_10FOLDCV_1,
+                                           family = "binomial",
+                                           method = "glm",
+                                           trControl = ctrl,
+                                           metric = "accuracy")
+
+logisticRegression_allImportantVariables_results_10FoldCV_1 <- as.data.frame(logisticRegression_AllImportantVariables_10FoldCV_1$results)
+
+logisticRegression_allImportantVariables_maxAccuracies_10FoldCV <- logisticRegression_allImportantVariables_results_10FoldCV_1
+
+#K-NEAREST NEIGHBORS
+KNN_AllImportantVariables_10FoldCV_1 <- train(response~Stretch_standardized + ST2_standardized +
+                              EjectionFraction_standardized + TIFRII_standardized + 
+                              LVESV_standardized + CRP_standardized + BNP_standardized,
+                            SpinaleAll_10FOLDCV_1,
+                            method = "knn",
+                            trControl = ctrl,
+                            tuneLength = 20,
+                            metric = "Accuracy")
+
+KNN_allImportantVariables_results_10FoldCV_1 <- as.data.frame(KNN_AllImportantVariables_10FoldCV_1$results)
+
+KNN_allImportantVariables_maxAccuracies_10FoldCV <- KNN_allImportantVariables_results_10FoldCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#LINEAR SVM
+LinearSVM_AllImportantVariables_10FoldCV_1 <- train(response~Stretch_standardized + ST2_standardized +
+                                    EjectionFraction_standardized + TIFRII_standardized + 
+                                    LVESV_standardized + CRP_standardized + BNP_standardized,
+                                  SpinaleAll_10FOLDCV_1,
+                                  method = "svmLinear",
+                                  trControl = ctrl,
+                                  tuneGrid = grid,
+                                  metric = "Accuracy")
+
+LinearSVM_allImportantVariables_results_10FoldCV_1 <- as.data.frame(LinearSVM_AllImportantVariables_10FoldCV_1$results)
+
+LinearSVM_allImportantVariables_maxAccuracies_10FoldCV <- LinearSVM_allImportantVariables_results_10FoldCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#Radial SVM
+RadialSVM_AllImportantVariables_10FoldCV_1 <- train(response~Stretch_standardized + ST2_standardized +
+                                    EjectionFraction_standardized + TIFRII_standardized + 
+                                    LVESV_standardized + CRP_standardized + BNP_standardized,
+                                  SpinaleAll_10FOLDCV_1,
+                                  method = "svmRadial",
+                                  trControl = ctrl,
+                                  tuneGrid = grid_radial,
+                                  metric = "Accuracy")
+
+RadialSVM_allImportantVariables_results_10FoldCV_1 <- as.data.frame(RadialSVM_AllImportantVariables_10FoldCV_1$results)
+
+RadialSVM_allImportantVariables_maxAccuracies_10FoldCV <- RadialSVM_allImportantVariables_results_10FoldCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#Second 10-Fold CV
+SpinaleAll_10FOLDCV_2<- Spinale_both_training[sample(nrow(Spinale_both_training)),]
+
+#RANDOM FOREST
+randomForest_AllImportantVariables_10FoldCV_2 <- train(response~Stretch_standardized + ST2_standardized +
+                                                         EjectionFraction_standardized + TIFRII_standardized + 
+                                                         LVESV_standardized + CRP_standardized + BNP_standardized,
+                                    SpinaleAll_10FOLDCV_2,
+                                    method = "rf",
+                                    trControl = ctrl,
+                                    tuneLength = 21,
+                                    ntrees = 1000,
+                                    metric = "Accuracy")
+
+randomForest_allImportantVariables_results_10FoldCV_2 <- as.data.frame(randomForest_AllImportantVariables_10FoldCV_2$results)
+
+randomForest_allImportantVariables_maxAccuracy_10FoldCV_2 <- randomForest_allImportantVariables_results_10FoldCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_allImportantVariables_maxAccuracies_10FoldCV <- rbind(randomForest_allImportantVariables_maxAccuracies_10FoldCV,
+                                                randomForest_allImportantVariables_maxAccuracy_10FoldCV_2)
+
+#LOGISTIC REGRESSION
+logisticRegression_AllImportantVariables_10FoldCV_2 <- train(response~Stretch_standardized + ST2_standardized +
+                                                               EjectionFraction_standardized + TIFRII_standardized + 
+                                                               LVESV_standardized + CRP_standardized + BNP_standardized,
+                                          SpinaleAll_10FOLDCV_2,
+                                          family = "binomial",
+                                          method = "glm",
+                                          trControl = ctrl,
+                                          metric = "accuracy")
+
+logisticRegression_allImportantVariables_results_10FoldCV_2 <- as.data.frame(logisticRegression_AllImportantVariables_10FoldCV_2$results)
+
+logisticRegression_allImportantVariables_maxAccuracies_10FoldCV <- rbind(logisticRegression_allImportantVariables_maxAccuracies_10FoldCV,
+                                                                         logisticRegression_allImportantVariables_results_10FoldCV_2)
+
+#K-NEAREST NEIGHBORS
+KNN_AllImportantVariables_10FoldCV_2 <- train(response~Stretch_standardized + ST2_standardized +
+                             EjectionFraction_standardized + TIFRII_standardized + 
+                             LVESV_standardized + CRP_standardized + BNP_standardized,
+                           SpinaleAll_10FOLDCV_2,
+                           method = "knn",
+                           trControl = ctrl,
+                           tuneLength = 20,
+                           metric = "Accuracy")
+
+KNN_allImportantVariables_results_10FoldCV_2 <- as.data.frame(KNN_AllImportantVariables_10FoldCV_2$results)
+
+KNN_allImportantVariables_maxAccuracy_10FoldCV_2 <- KNN_allImportantVariables_results_10FoldCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_allImportantVariables_maxAccuracies_10FoldCV <- rbind(KNN_allImportantVariables_maxAccuracies_10FoldCV,
+                                                          KNN_allImportantVariables_maxAccuracy_10FoldCV_2)
+
+#LINEAR SVM
+LinearSVM_AllImportantVariables_10FoldCV_2 <- train(response~Stretch_standardized + ST2_standardized +
+                                   EjectionFraction_standardized + TIFRII_standardized + 
+                                   LVESV_standardized + CRP_standardized + BNP_standardized,
+                                 SpinaleAll_10FOLDCV_2,
+                                 method = "svmLinear",
+                                 trControl = ctrl,
+                                 tuneGrid = grid,
+                                 metric = "Accuracy")
+
+LinearSVM_allImportantVariables_results_10FoldCV_2 <- as.data.frame(LinearSVM_AllImportantVariables_10FoldCV_2$results)
+
+LinearSVM_allImportantVariables_maxAccuracy_10FoldCV_2 <- LinearSVM_allImportantVariables_results_10FoldCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_allImportantVariables_maxAccuracies_10FoldCV <- rbind(LinearSVM_allImportantVariables_maxAccuracies_10FoldCV, 
+                                             LinearSVM_allImportantVariables_maxAccuracy_10FoldCV_2)
+
+#RADIAL SVM
+RadialSVM_AllImportantVariables_10FoldCV_2 <- train(response~Stretch_standardized + ST2_standardized +
+                                   EjectionFraction_standardized + TIFRII_standardized + 
+                                   LVESV_standardized + CRP_standardized + BNP_standardized,
+                                 SpinaleAll_10FOLDCV_2,
+                                 method = "svmRadial",
+                                 trControl = ctrl,
+                                 tuneGrid = grid_radial,
+                                 metric = "Accuracy")
+
+RadialSVM_allImportantVariables_results_10FoldCV_2 <- as.data.frame(RadialSVM_AllImportantVariables_10FoldCV_2$results)
+
+RadialSVM_allImportantVariables_maxAccuracy_10FoldCV_2 <- RadialSVM_allImportantVariables_results_10FoldCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_allImportantVariables_maxAccuracies_10FoldCV <- rbind(RadialSVM_allImportantVariables_maxAccuracies_10FoldCV, 
+                                             RadialSVM_allImportantVariables_maxAccuracy_10FoldCV_2)
+
+#Third 10-Fold CV
+SpinaleAll_10FOLDCV_3<- Spinale_both_training[sample(nrow(Spinale_both_training)),]
+
+#RANDOM FOREST
+randomForest_AllImportantVariables_10FoldCV_3 <- train(response~Stretch_standardized + ST2_standardized +
+                                                         EjectionFraction_standardized + TIFRII_standardized + 
+                                                         LVESV_standardized + CRP_standardized + BNP_standardized,
+                                                       SpinaleAll_10FOLDCV_3,
+                                                       method = "rf",
+                                                       trControl = ctrl,
+                                                       tuneLength = 21,
+                                                       ntrees = 1000,
+                                                       metric = "Accuracy")
+
+randomForest_allImportantVariables_results_10FoldCV_3 <- as.data.frame(randomForest_AllImportantVariables_10FoldCV_3$results)
+
+randomForest_allImportantVariables_maxAccuracy_10FoldCV_3 <- randomForest_allImportantVariables_results_10FoldCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_allImportantVariables_maxAccuracies_10FoldCV <- rbind(randomForest_allImportantVariables_maxAccuracies_10FoldCV,
+                                                                   randomForest_allImportantVariables_maxAccuracy_10FoldCV_3)
+
+#LOGISTIC REGRESSION
+logisticRegression_AllImportantVariables_10FoldCV_3 <- train(response~Stretch_standardized + ST2_standardized +
+                                                               EjectionFraction_standardized + TIFRII_standardized + 
+                                                               LVESV_standardized + CRP_standardized + BNP_standardized,
+                                                             SpinaleAll_10FOLDCV_3,
+                                                             family = "binomial",
+                                                             method = "glm",
+                                                             trControl = ctrl,
+                                                             metric = "accuracy")
+
+logisticRegression_allImportantVariables_results_10FoldCV_3 <- as.data.frame(logisticRegression_AllImportantVariables_10FoldCV_3$results)
+
+logisticRegression_allImportantVariables_maxAccuracies_10FoldCV <- rbind(logisticRegression_allImportantVariables_maxAccuracies_10FoldCV,
+                                                                         logisticRegression_allImportantVariables_results_10FoldCV_3)
+
+#K-NEAREST NEIGHBORS
+KNN_AllImportantVariables_10FoldCV_3 <- train(response~Stretch_standardized + ST2_standardized +
+                                                EjectionFraction_standardized + TIFRII_standardized + 
+                                                LVESV_standardized + CRP_standardized + BNP_standardized,
+                                              SpinaleAll_10FOLDCV_3,
+                                              method = "knn",
+                                              trControl = ctrl,
+                                              tuneLength = 20,
+                                              metric = "Accuracy")
+
+KNN_allImportantVariables_results_10FoldCV_3 <- as.data.frame(KNN_AllImportantVariables_10FoldCV_3$results)
+
+KNN_allImportantVariables_maxAccuracy_10FoldCV_3 <- KNN_allImportantVariables_results_10FoldCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_allImportantVariables_maxAccuracies_10FoldCV <- rbind(KNN_allImportantVariables_maxAccuracies_10FoldCV,
+                                                          KNN_allImportantVariables_maxAccuracy_10FoldCV_3)
+
+#LINEAR SVM
+LinearSVM_AllImportantVariables_10FoldCV_3 <- train(response~Stretch_standardized + ST2_standardized +
+                                                      EjectionFraction_standardized + TIFRII_standardized + 
+                                                      LVESV_standardized + CRP_standardized + BNP_standardized,
+                                                    SpinaleAll_10FOLDCV_3,
+                                                    method = "svmLinear",
+                                                    trControl = ctrl,
+                                                    tuneGrid = grid,
+                                                    metric = "Accuracy")
+
+LinearSVM_allImportantVariables_results_10FoldCV_3 <- as.data.frame(LinearSVM_AllImportantVariables_10FoldCV_3$results)
+
+LinearSVM_allImportantVariables_maxAccuracy_10FoldCV_3 <- LinearSVM_allImportantVariables_results_10FoldCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_allImportantVariables_maxAccuracies_10FoldCV <- rbind(LinearSVM_allImportantVariables_maxAccuracies_10FoldCV, 
+                                                                LinearSVM_allImportantVariables_maxAccuracy_10FoldCV_3)
+
+#RADIAL SVM
+RadialSVM_AllImportantVariables_10FoldCV_3 <- train(response~Stretch_standardized + ST2_standardized +
+                                                      EjectionFraction_standardized + TIFRII_standardized + 
+                                                      LVESV_standardized + CRP_standardized + BNP_standardized,
+                                                    SpinaleAll_10FOLDCV_3,
+                                                    method = "svmRadial",
+                                                    trControl = ctrl,
+                                                    tuneGrid = grid_radial,
+                                                    metric = "Accuracy")
+
+RadialSVM_allImportantVariables_results_10FoldCV_3 <- as.data.frame(RadialSVM_AllImportantVariables_10FoldCV_3$results)
+
+RadialSVM_allImportantVariables_maxAccuracy_10FoldCV_3 <- RadialSVM_allImportantVariables_results_10FoldCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_allImportantVariables_maxAccuracies_10FoldCV <- rbind(RadialSVM_allImportantVariables_maxAccuracies_10FoldCV, 
+                                                                RadialSVM_allImportantVariables_maxAccuracy_10FoldCV_3)
+
+#Fourth 10-Fold CV
+SpinaleAll_10FOLDCV_4<- Spinale_both_training[sample(nrow(Spinale_both_training)),]
+
+#RANDOM FOREST
+randomForest_AllImportantVariables_10FoldCV_4 <- train(response~Stretch_standardized + ST2_standardized +
+                                                         EjectionFraction_standardized + TIFRII_standardized + 
+                                                         LVESV_standardized + CRP_standardized + BNP_standardized,
+                                                       SpinaleAll_10FOLDCV_4,
+                                                       method = "rf",
+                                                       trControl = ctrl,
+                                                       tuneLength = 21,
+                                                       ntrees = 1000,
+                                                       metric = "Accuracy")
+
+randomForest_allImportantVariables_results_10FoldCV_4 <- as.data.frame(randomForest_AllImportantVariables_10FoldCV_4$results)
+
+randomForest_allImportantVariables_maxAccuracy_10FoldCV_4 <- randomForest_allImportantVariables_results_10FoldCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_allImportantVariables_maxAccuracies_10FoldCV <- rbind(randomForest_allImportantVariables_maxAccuracies_10FoldCV,
+                                                                   randomForest_allImportantVariables_maxAccuracy_10FoldCV_4)
+
+#LOGISTIC REGRESSION
+logisticRegression_AllImportantVariables_10FoldCV_4 <- train(response~Stretch_standardized + ST2_standardized +
+                                                               EjectionFraction_standardized + TIFRII_standardized + 
+                                                               LVESV_standardized + CRP_standardized + BNP_standardized,
+                                                             SpinaleAll_10FOLDCV_4,
+                                                             family = "binomial",
+                                                             method = "glm",
+                                                             trControl = ctrl,
+                                                             metric = "accuracy")
+
+logisticRegression_allImportantVariables_results_10FoldCV_4 <- as.data.frame(logisticRegression_AllImportantVariables_10FoldCV_4$results)
+
+logisticRegression_allImportantVariables_maxAccuracies_10FoldCV <- rbind(logisticRegression_allImportantVariables_maxAccuracies_10FoldCV,
+                                                                         logisticRegression_allImportantVariables_results_10FoldCV_4)
+
+#K-NEAREST NEIGHBORS
+KNN_AllImportantVariables_10FoldCV_4 <- train(response~Stretch_standardized + ST2_standardized +
+                                                EjectionFraction_standardized + TIFRII_standardized + 
+                                                LVESV_standardized + CRP_standardized + BNP_standardized,
+                                              SpinaleAll_10FOLDCV_4,
+                                              method = "knn",
+                                              trControl = ctrl,
+                                              tuneLength = 20,
+                                              metric = "Accuracy")
+
+KNN_allImportantVariables_results_10FoldCV_4 <- as.data.frame(KNN_AllImportantVariables_10FoldCV_4$results)
+
+KNN_allImportantVariables_maxAccuracy_10FoldCV_4 <- KNN_allImportantVariables_results_10FoldCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_allImportantVariables_maxAccuracies_10FoldCV <- rbind(KNN_allImportantVariables_maxAccuracies_10FoldCV,
+                                                          KNN_allImportantVariables_maxAccuracy_10FoldCV_4)
+
+#LINEAR SVM
+LinearSVM_AllImportantVariables_10FoldCV_4 <- train(response~Stretch_standardized + ST2_standardized +
+                                                      EjectionFraction_standardized + TIFRII_standardized + 
+                                                      LVESV_standardized + CRP_standardized + BNP_standardized,
+                                                    SpinaleAll_10FOLDCV_4,
+                                                    method = "svmLinear",
+                                                    trControl = ctrl,
+                                                    tuneGrid = grid,
+                                                    metric = "Accuracy")
+
+LinearSVM_allImportantVariables_results_10FoldCV_4 <- as.data.frame(LinearSVM_AllImportantVariables_10FoldCV_4$results)
+
+LinearSVM_allImportantVariables_maxAccuracy_10FoldCV_4 <- LinearSVM_allImportantVariables_results_10FoldCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_allImportantVariables_maxAccuracies_10FoldCV <- rbind(LinearSVM_allImportantVariables_maxAccuracies_10FoldCV, 
+                                                                LinearSVM_allImportantVariables_maxAccuracy_10FoldCV_4)
+
+#RADIAL SVM
+RadialSVM_AllImportantVariables_10FoldCV_4 <- train(response~Stretch_standardized + ST2_standardized +
+                                                      EjectionFraction_standardized + TIFRII_standardized + 
+                                                      LVESV_standardized + CRP_standardized + BNP_standardized,
+                                                    SpinaleAll_10FOLDCV_4,
+                                                    method = "svmRadial",
+                                                    trControl = ctrl,
+                                                    tuneGrid = grid_radial,
+                                                    metric = "Accuracy")
+
+RadialSVM_allImportantVariables_results_10FoldCV_4 <- as.data.frame(RadialSVM_AllImportantVariables_10FoldCV_4$results)
+
+RadialSVM_allImportantVariables_maxAccuracy_10FoldCV_4 <- RadialSVM_allImportantVariables_results_10FoldCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_allImportantVariables_maxAccuracies_10FoldCV <- rbind(RadialSVM_allImportantVariables_maxAccuracies_10FoldCV, 
+                                                                RadialSVM_allImportantVariables_maxAccuracy_10FoldCV_4)
+
+#Fifth 10-Fold CV
+SpinaleAll_10FOLDCV_5<- Spinale_both_training[sample(nrow(Spinale_both_training)),]
+
+#RANDOM FOREST
+randomForest_AllImportantVariables_10FoldCV_5 <- train(response~Stretch_standardized + ST2_standardized +
+                                                         EjectionFraction_standardized + TIFRII_standardized + 
+                                                         LVESV_standardized + CRP_standardized + BNP_standardized,
+                                                       SpinaleAll_10FOLDCV_5,
+                                                       method = "rf",
+                                                       trControl = ctrl,
+                                                       tuneLength = 21,
+                                                       ntrees = 1000,
+                                                       metric = "Accuracy")
+
+randomForest_allImportantVariables_results_10FoldCV_5 <- as.data.frame(randomForest_AllImportantVariables_10FoldCV_5$results)
+
+randomForest_allImportantVariables_maxAccuracy_10FoldCV_5 <- randomForest_allImportantVariables_results_10FoldCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_allImportantVariables_maxAccuracies_10FoldCV <- rbind(randomForest_allImportantVariables_maxAccuracies_10FoldCV,
+                                                                   randomForest_allImportantVariables_maxAccuracy_10FoldCV_5)
+
+#LOGISTIC REGRESSION
+logisticRegression_AllImportantVariables_10FoldCV_5 <- train(response~Stretch_standardized + ST2_standardized +
+                                                               EjectionFraction_standardized + TIFRII_standardized + 
+                                                               LVESV_standardized + CRP_standardized + BNP_standardized,
+                                                             SpinaleAll_10FOLDCV_5,
+                                                             family = "binomial",
+                                                             method = "glm",
+                                                             trControl = ctrl,
+                                                             metric = "accuracy")
+
+logisticRegression_allImportantVariables_results_10FoldCV_5 <- as.data.frame(logisticRegression_AllImportantVariables_10FoldCV_5$results)
+
+logisticRegression_allImportantVariables_maxAccuracies_10FoldCV <- rbind(logisticRegression_allImportantVariables_maxAccuracies_10FoldCV,
+                                                                         logisticRegression_allImportantVariables_results_10FoldCV_5)
+
+#K-NEAREST NEIGHBORS
+KNN_AllImportantVariables_10FoldCV_5 <- train(response~Stretch_standardized + ST2_standardized +
+                                                EjectionFraction_standardized + TIFRII_standardized + 
+                                                LVESV_standardized + CRP_standardized + BNP_standardized,
+                                              SpinaleAll_10FOLDCV_5,
+                                              method = "knn",
+                                              trControl = ctrl,
+                                              tuneLength = 20,
+                                              metric = "Accuracy")
+
+KNN_allImportantVariables_results_10FoldCV_5 <- as.data.frame(KNN_AllImportantVariables_10FoldCV_5$results)
+
+KNN_allImportantVariables_maxAccuracy_10FoldCV_5 <- KNN_allImportantVariables_results_10FoldCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_allImportantVariables_maxAccuracies_10FoldCV <- rbind(KNN_allImportantVariables_maxAccuracies_10FoldCV,
+                                                          KNN_allImportantVariables_maxAccuracy_10FoldCV_5)
+
+#LINEAR SVM
+LinearSVM_AllImportantVariables_10FoldCV_5 <- train(response~Stretch_standardized + ST2_standardized +
+                                                      EjectionFraction_standardized + TIFRII_standardized + 
+                                                      LVESV_standardized + CRP_standardized + BNP_standardized,
+                                                    SpinaleAll_10FOLDCV_5,
+                                                    method = "svmLinear",
+                                                    trControl = ctrl,
+                                                    tuneGrid = grid,
+                                                    metric = "Accuracy")
+
+LinearSVM_allImportantVariables_results_10FoldCV_5 <- as.data.frame(LinearSVM_AllImportantVariables_10FoldCV_5$results)
+
+LinearSVM_allImportantVariables_maxAccuracy_10FoldCV_5 <- LinearSVM_allImportantVariables_results_10FoldCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_allImportantVariables_maxAccuracies_10FoldCV <- rbind(LinearSVM_allImportantVariables_maxAccuracies_10FoldCV, 
+                                                                LinearSVM_allImportantVariables_maxAccuracy_10FoldCV_5)
+
+#RADIAL SVM
+RadialSVM_AllImportantVariables_10FoldCV_5 <- train(response~Stretch_standardized + ST2_standardized +
+                                                      EjectionFraction_standardized + TIFRII_standardized + 
+                                                      LVESV_standardized + CRP_standardized + BNP_standardized,
+                                                    SpinaleAll_10FOLDCV_5,
+                                                    method = "svmRadial",
+                                                    trControl = ctrl,
+                                                    tuneGrid = grid_radial,
+                                                    metric = "Accuracy")
+
+RadialSVM_allImportantVariables_results_10FoldCV_5 <- as.data.frame(RadialSVM_AllImportantVariables_10FoldCV_5$results)
+
+RadialSVM_allImportantVariables_maxAccuracy_10FoldCV_5 <- RadialSVM_allImportantVariables_results_10FoldCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_allImportantVariables_maxAccuracies_10FoldCV <- rbind(RadialSVM_allImportantVariables_maxAccuracies_10FoldCV, 
+                                                                RadialSVM_allImportantVariables_maxAccuracy_10FoldCV_5)
+
+#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+
+#first 5 fold CV
+SpinaleAllVariables_5FOLDCV_1 <- Spinale_both_training[sample(nrow(Spinale_both_training)),]
+
+#RANDOM FOREST
+
+randomForest_AllImportantVariables_5FoldCV_1 <- train(response~Stretch_standardized + ST2_standardized +
+                                                        EjectionFraction_standardized + TIFRII_standardized + 
+                                                        LVESV_standardized + CRP_standardized + BNP_standardized,
+                                    SpinaleAllVariables_5FOLDCV_1,
+                                    method = "rf",
+                                    trControl = ctrl_5_fold_CV,
+                                    tuneLength = 9,
+                                    ntrees = 1000,
+                                    metric = "Accuracy")
+
+
+randomForest_allImportantVariables_results_5FoldCV_1 <- as.data.frame(randomForest_AllImportantVariables_5FoldCV_1$results)
+
+randomForest_allImportantVariables_maxAccuracies_5FoldCV <- randomForest_allImportantVariables_results_5FoldCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#LOGISTIC REGRESSION
+logisticRegression_AllImportantVariables_5FoldCV_1 <- train(response~Stretch_standardized + ST2_standardized +
+                                            EjectionFraction_standardized + TIFRII_standardized + 
+                                            LVESV_standardized + CRP_standardized + BNP_standardized,
+                                          data = SpinaleAllVariables_5FOLDCV_1,
+                                          family = "binomial",
+                                          method = "glm",
+                                          trControl = ctrl_5_fold_CV,
+                                          metric = "Accuracy")
+
+logisticRegression_allImportantVariables_results_5FoldCV_1 <- as.data.frame(logisticRegression_AllImportantVariables_5FoldCV_1$results)
+
+logisticRegression_allImportantVariables_maxAccuracies_5FoldCV <- logisticRegression_allImportantVariables_results_5FoldCV_1
+
+
+#K-NEAREST NEIGHBORS
+KNN_allImportantVariables_5FoldCV_1 <-  train(response~Stretch_standardized + ST2_standardized +
+                                                EjectionFraction_standardized + TIFRII_standardized + 
+                                                LVESV_standardized + CRP_standardized + BNP_standardized,
+                            SpinaleAllVariables_5FOLDCV_1,
+                            method = "knn",
+                            trControl = ctrl_5_fold_CV,
+                            tuneLength = 20,
+                            metric = "Accuracy")
+
+KNN_allImportantVariables_results_5FoldCV_1 <- as.data.frame(KNN_allImportantVariables_5FoldCV_1$results)
+
+KNN_allImportantVariables_maxAccuracies_5FoldCV <- KNN_allImportantVariables_results_5FoldCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#LINEAR SVM
+LinearSVM_allImportant_5FoldCV_1 <- train(response~Stretch_standardized + ST2_standardized +
+                                   EjectionFraction_standardized + TIFRII_standardized + 
+                                   LVESV_standardized + CRP_standardized + BNP_standardized,
+                                 SpinaleAllVariables_5FOLDCV_1,
+                                 method = "svmLinear",
+                                 trControl = ctrl_5_fold_CV,
+                                 tuneGrid = grid,
+                                 metric = "Accuracy")
+
+LinearSVM_allImportantVariables_results_5FoldCV_1 <- as.data.frame(LinearSVM_allImportant_5FoldCV_1$results)
+
+LinearSVM_allImportantVariables_maxAccuracies_5FoldCV <- LinearSVM_allImportantVariables_results_5FoldCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#RADIAL SVM
+RadialSVM_allImportantVariables_5FoldCV_1 <- train(response~Stretch_standardized + ST2_standardized +
+                                   EjectionFraction_standardized + TIFRII_standardized + 
+                                   LVESV_standardized + CRP_standardized + BNP_standardized,
+                                 SpinaleAllVariables_5FOLDCV_1,
+                                 method = "svmRadial",
+                                 trControl = ctrl_5_fold_CV,
+                                 tuneGrid = grid_radial,
+                                 metric = "Accuracy")
+
+RadialSVM_allImportantVariables_results_5FoldCV_1 <- as.data.frame(RadialSVM_allImportantVariables_5FoldCV_1$results)
+
+RadialSVM_allImportantVariables_maxAccuracies_5FoldCV <- RadialSVM_allImportantVariables_results_5FoldCV_1 %>%
+  filter(Accuracy == max(Accuracy))
+
+#Second 5-Fold CV
+SpinaleAllImportantVariables_5FOLDCV_2<- Spinale_both_training[sample(nrow(Spinale_both_training)),]
+
+#RANDOM FOREST
+randomForest_AllImportantVariables_5FoldCV_2 <- train(response~Stretch_standardized + ST2_standardized +
+                                      EjectionFraction_standardized + TIFRII_standardized + 
+                                      LVESV_standardized + CRP_standardized + BNP_standardized,
+                                    SpinaleAllImportantVariables_5FOLDCV_2,
+                                    method = "rf",
+                                    trControl = ctrl_5_fold_CV,
+                                    tuneLength = 21,
+                                    ntrees = 1000,
+                                    metric = "Accuracy")
+
+randomForest_allImportantVariables_results_5FoldCV_2 <- as.data.frame(randomForest_AllImportantVariables_5FoldCV_2$results)
+
+randomForest_allImportantVariables_maxAccuracy_5FoldCV_2 <- randomForest_allImportantVariables_results_5FoldCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_allImportantVariables_maxAccuracies_5FoldCV <- rbind(randomForest_allImportantVariables_maxAccuracies_5FoldCV,
+                                                randomForest_allImportantVariables_maxAccuracy_5FoldCV_2)
+
+#LOGISTIC REGRESSION
+logisticRegression_allImportantVariables_5FoldCV_2 <- train(response~Stretch_standardized + ST2_standardized +
+                                            EjectionFraction_standardized + TIFRII_standardized + 
+                                            LVESV_standardized + CRP_standardized + BNP_standardized,
+                                          SpinaleAllImportantVariables_5FOLDCV_2,
+                                          family = "binomial",
+                                          method = "glm",
+                                          trControl = ctrl_5_fold_CV,
+                                          metric = "accuracy")
+
+logisticRegression_allImportantVariables_results_5FoldCV_2 <- as.data.frame(logisticRegression_allImportantVariables_5FoldCV_2$results)
+
+logisticRegression_allImportantVariables_maxAccuracies_5FoldCV <- rbind(logisticRegression_allImportantVariables_maxAccuracies_5FoldCV,
+                                                      logisticRegression_allImportantVariables_results_5FoldCV_2)
+
+#K-NEAREST NEIGHBORS
+KNN_allImportantVariables_5FOLDCV_2 <- train(response~Stretch_standardized + ST2_standardized +
+                             EjectionFraction_standardized + TIFRII_standardized + 
+                             LVESV_standardized + CRP_standardized + BNP_standardized,
+                           SpinaleAllImportantVariables_5FOLDCV_2,
+                           method = "knn",
+                           trControl = ctrl_5_fold_CV,
+                           tuneLength = 20,
+                           metric = "Accuracy")
+
+KNN_allImportantVariables_results_5FoldCV_2 <- as.data.frame(KNN_allImportantVariables_5FOLDCV_2$results)
+
+KNN_allImportantVariables_maxAccuracy_5FoldCV_2 <- KNN_allImportantVariables_results_5FoldCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_allImportantVariables_maxAccuracies_5FoldCV <- rbind(KNN_allImportantVariables_maxAccuracies_5FoldCV,
+                                       KNN_allImportantVariables_maxAccuracy_5FoldCV_2)
+
+#LINEAR SVM
+LinearSVM_allImportantVariables_5FOLDCV_2 <- train(response~Stretch_standardized + ST2_standardized +
+                                   EjectionFraction_standardized + TIFRII_standardized + 
+                                   LVESV_standardized + CRP_standardized + BNP_standardized,
+                                 SpinaleAllImportantVariables_5FOLDCV_2,
+                                 method = "svmLinear",
+                                 trControl = ctrl_5_fold_CV,
+                                 tuneGrid = grid,
+                                 metric = "Accuracy")
+
+LinearSVM_allImportantVariables_results_5FoldCV_2 <- as.data.frame(LinearSVM_allImportantVariables_5FOLDCV_2$results)
+
+LinearSVM_allImportantVariables_maxAccuracy_5FoldCV_2 <- LinearSVM_allImportantVariables_results_5FoldCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_allImportantVariables_maxAccuracies_5FoldCV <- rbind(LinearSVM_allImportantVariables_maxAccuracies_5FoldCV, 
+                                             LinearSVM_allImportantVariables_maxAccuracy_5FoldCV_2)
+
+#RADIAL SVM
+RadialSVM_allImportantVariables_5FoldCV_2 <- train(response~Stretch_standardized + ST2_standardized +
+                                   EjectionFraction_standardized + TIFRII_standardized + 
+                                   LVESV_standardized + CRP_standardized + BNP_standardized,
+                                 SpinaleAllImportantVariables_5FOLDCV_2,
+                                 method = "svmRadial",
+                                 trControl = ctrl_5_fold_CV,
+                                 tuneGrid = grid_radial,
+                                 metric = "Accuracy")
+
+RadialSVM_allImportantVariables_results_5FoldCV_2 <- as.data.frame(RadialSVM_allImportantVariables_5FoldCV_2$results)
+
+RadialSVM_allImportantVariables_maxAccuracy_5FoldCV_2 <- RadialSVM_allImportantVariables_results_5FoldCV_2 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_allImportantVariables_maxAccuracies_5FoldCV <- rbind(RadialSVM_allImportantVariables_maxAccuracies_5FoldCV, 
+                                             RadialSVM_allImportantVariables_maxAccuracy_5FoldCV_2)
+
+#Third 5-Fold CV
+SpinaleAllImportantVariables_5FOLDCV_3<- Spinale_both_training[sample(nrow(Spinale_both_training)),]
+
+#RANDOM FOREST
+randomForest_AllImportantVariables_5FoldCV_3 <- train(response~Stretch_standardized + ST2_standardized +
+                                                        EjectionFraction_standardized + TIFRII_standardized + 
+                                                        LVESV_standardized + CRP_standardized + BNP_standardized,
+                                                      SpinaleAllImportantVariables_5FOLDCV_3,
+                                                      method = "rf",
+                                                      trControl = ctrl_5_fold_CV,
+                                                      tuneLength = 21,
+                                                      ntrees = 1000,
+                                                      metric = "Accuracy")
+
+randomForest_allImportantVariables_results_5FoldCV_3 <- as.data.frame(randomForest_AllImportantVariables_5FoldCV_3$results)
+
+randomForest_allImportantVariables_maxAccuracy_5FoldCV_3 <- randomForest_allImportantVariables_results_5FoldCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_allImportantVariables_maxAccuracies_5FoldCV <- rbind(randomForest_allImportantVariables_maxAccuracies_5FoldCV,
+                                                                  randomForest_allImportantVariables_maxAccuracy_5FoldCV_3)
+
+#LOGISTIC REGRESSION
+logisticRegression_allImportantVariables_5FoldCV_3 <- train(response~Stretch_standardized + ST2_standardized +
+                                                              EjectionFraction_standardized + TIFRII_standardized + 
+                                                              LVESV_standardized + CRP_standardized + BNP_standardized,
+                                                            SpinaleAllImportantVariables_5FOLDCV_3,
+                                                            family = "binomial",
+                                                            method = "glm",
+                                                            trControl = ctrl_5_fold_CV,
+                                                            metric = "accuracy")
+
+logisticRegression_allImportantVariables_results_5FoldCV_3 <- as.data.frame(logisticRegression_allImportantVariables_5FoldCV_3$results)
+
+logisticRegression_allImportantVariables_maxAccuracies_5FoldCV <- rbind(logisticRegression_allImportantVariables_maxAccuracies_5FoldCV,
+                                                                        logisticRegression_allImportantVariables_results_5FoldCV_3)
+
+#K-NEAREST NEIGHBORS
+KNN_allImportantVariables_5FOLDCV_3 <- train(response~Stretch_standardized + ST2_standardized +
+                                               EjectionFraction_standardized + TIFRII_standardized + 
+                                               LVESV_standardized + CRP_standardized + BNP_standardized,
+                                             SpinaleAllImportantVariables_5FOLDCV_3,
+                                             method = "knn",
+                                             trControl = ctrl_5_fold_CV,
+                                             tuneLength = 20,
+                                             metric = "Accuracy")
+
+KNN_allImportantVariables_results_5FoldCV_3 <- as.data.frame(KNN_allImportantVariables_5FOLDCV_3$results)
+
+KNN_allImportantVariables_maxAccuracy_5FoldCV_3 <- KNN_allImportantVariables_results_5FoldCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_allImportantVariables_maxAccuracies_5FoldCV <- rbind(KNN_allImportantVariables_maxAccuracies_5FoldCV,
+                                       KNN_allImportantVariables_maxAccuracy_5FoldCV_3)
+
+#LINEAR SVM
+LinearSVM_allImportantVariables_5FOLDCV_3 <- train(response~Stretch_standardized + ST2_standardized +
+                                                     EjectionFraction_standardized + TIFRII_standardized + 
+                                                     LVESV_standardized + CRP_standardized + BNP_standardized,
+                                                   SpinaleAllImportantVariables_5FOLDCV_3,
+                                                   method = "svmLinear",
+                                                   trControl = ctrl_5_fold_CV,
+                                                   tuneGrid = grid,
+                                                   metric = "Accuracy")
+
+LinearSVM_allImportantVariables_results_5FoldCV_3 <- as.data.frame(LinearSVM_allImportantVariables_5FOLDCV_3$results)
+
+LinearSVM_allImportantVariables_maxAccuracy_5FoldCV_3 <- LinearSVM_allImportantVariables_results_5FoldCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_allImportantVariables_maxAccuracies_5FoldCV <- rbind(LinearSVM_allImportantVariables_maxAccuracies_5FoldCV, 
+                                                               LinearSVM_allImportantVariables_maxAccuracy_5FoldCV_3)
+
+#RADIAL SVM
+RadialSVM_allImportantVariables_5FoldCV_3 <- train(response~Stretch_standardized + ST2_standardized +
+                                                     EjectionFraction_standardized + TIFRII_standardized + 
+                                                     LVESV_standardized + CRP_standardized + BNP_standardized,
+                                                   SpinaleAllImportantVariables_5FOLDCV_3,
+                                                   method = "svmRadial",
+                                                   trControl = ctrl_5_fold_CV,
+                                                   tuneGrid = grid_radial,
+                                                   metric = "Accuracy")
+
+RadialSVM_allImportantVariables_results_5FoldCV_3 <- as.data.frame(RadialSVM_allImportantVariables_5FoldCV_3$results)
+
+RadialSVM_allImportantVariables_maxAccuracy_5FoldCV_3 <- RadialSVM_allImportantVariables_results_5FoldCV_3 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_allImportantVariables_maxAccuracies_5FoldCV <- rbind(RadialSVM_allImportantVariables_maxAccuracies_5FoldCV, 
+                                                               RadialSVM_allImportantVariables_maxAccuracy_5FoldCV_3)
+#Fourth 5-Fold CV
+SpinaleAllImportantVariables_5FOLDCV_4<- Spinale_both_training[sample(nrow(Spinale_both_training)),]
+
+#RANDOM FOREST
+randomForest_AllImportantVariables_5FoldCV_4 <- train(response~Stretch_standardized + ST2_standardized +
+                                                        EjectionFraction_standardized + TIFRII_standardized + 
+                                                        LVESV_standardized + CRP_standardized + BNP_standardized,
+                                                      SpinaleAllImportantVariables_5FOLDCV_4,
+                                                      method = "rf",
+                                                      trControl = ctrl_5_fold_CV,
+                                                      tuneLength = 21,
+                                                      ntrees = 1000,
+                                                      metric = "Accuracy")
+
+randomForest_allImportantVariables_results_5FoldCV_4 <- as.data.frame(randomForest_AllImportantVariables_5FoldCV_4$results)
+
+randomForest_allImportantVariables_maxAccuracy_5FoldCV_4 <- randomForest_allImportantVariables_results_5FoldCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_allImportantVariables_maxAccuracies_5FoldCV <- rbind(randomForest_allImportantVariables_maxAccuracies_5FoldCV,
+                                                                  randomForest_allImportantVariables_maxAccuracy_5FoldCV_4)
+
+#LOGISTIC REGRESSION
+logisticRegression_allImportantVariables_5FoldCV_4 <- train(response~Stretch_standardized + ST2_standardized +
+                                                              EjectionFraction_standardized + TIFRII_standardized + 
+                                                              LVESV_standardized + CRP_standardized + BNP_standardized,
+                                                            SpinaleAllImportantVariables_5FOLDCV_4,
+                                                            family = "binomial",
+                                                            method = "glm",
+                                                            trControl = ctrl_5_fold_CV,
+                                                            metric = "accuracy")
+
+logisticRegression_allImportantVariables_results_5FoldCV_4 <- as.data.frame(logisticRegression_allImportantVariables_5FoldCV_4$results)
+
+logisticRegression_allImportantVariables_maxAccuracies_5FoldCV <- rbind(logisticRegression_allImportantVariables_maxAccuracies_5FoldCV,
+                                                                        logisticRegression_allImportantVariables_results_5FoldCV_4)
+
+#K-NEAREST NEIGHBORS
+KNN_allImportantVariables_5FOLDCV_4 <- train(response~Stretch_standardized + ST2_standardized +
+                                               EjectionFraction_standardized + TIFRII_standardized + 
+                                               LVESV_standardized + CRP_standardized + BNP_standardized,
+                                             SpinaleAllImportantVariables_5FOLDCV_4,
+                                             method = "knn",
+                                             trControl = ctrl_5_fold_CV,
+                                             tuneLength = 20,
+                                             metric = "Accuracy")
+
+KNN_allImportantVariables_results_5FoldCV_4 <- as.data.frame(KNN_allImportantVariables_5FOLDCV_4$results)
+
+KNN_allImportantVariables_maxAccuracy_5FoldCV_4 <- KNN_allImportantVariables_results_5FoldCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_allImportantVariables_maxAccuracies_5FoldCV <- rbind(KNN_allImportantVariables_maxAccuracies_5FoldCV,
+                                       KNN_allImportantVariables_maxAccuracy_5FoldCV_4)
+
+#LINEAR SVM
+LinearSVM_allImportantVariables_5FOLDCV_4 <- train(response~Stretch_standardized + ST2_standardized +
+                                                     EjectionFraction_standardized + TIFRII_standardized + 
+                                                     LVESV_standardized + CRP_standardized + BNP_standardized,
+                                                   SpinaleAllImportantVariables_5FOLDCV_4,
+                                                   method = "svmLinear",
+                                                   trControl = ctrl_5_fold_CV,
+                                                   tuneGrid = grid,
+                                                   metric = "Accuracy")
+
+LinearSVM_allImportantVariables_results_5FoldCV_4 <- as.data.frame(LinearSVM_allImportantVariables_5FOLDCV_4$results)
+
+LinearSVM_allImportantVariables_maxAccuracy_5FoldCV_4 <- LinearSVM_allImportantVariables_results_5FoldCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_allImportantVariables_maxAccuracies_5FoldCV <- rbind(LinearSVM_allImportantVariables_maxAccuracies_5FoldCV, 
+                                                               LinearSVM_allImportantVariables_maxAccuracy_5FoldCV_4)
+
+#RADIAL SVM
+RadialSVM_allImportantVariables_5FoldCV_4 <- train(response~Stretch_standardized + ST2_standardized +
+                                                     EjectionFraction_standardized + TIFRII_standardized + 
+                                                     LVESV_standardized + CRP_standardized + BNP_standardized,
+                                                   SpinaleAllImportantVariables_5FOLDCV_4,
+                                                   method = "svmRadial",
+                                                   trControl = ctrl_5_fold_CV,
+                                                   tuneGrid = grid_radial,
+                                                   metric = "Accuracy")
+
+RadialSVM_allImportantVariables_results_5FoldCV_4 <- as.data.frame(RadialSVM_allImportantVariables_5FoldCV_4$results)
+
+RadialSVM_allImportantVariables_maxAccuracy_5FoldCV_4 <- RadialSVM_allImportantVariables_results_5FoldCV_4 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_allImportantVariables_maxAccuracies_5FoldCV <- rbind(RadialSVM_allImportantVariables_maxAccuracies_5FoldCV, 
+                                                               RadialSVM_allImportantVariables_maxAccuracy_5FoldCV_4)
+#Fifth 5-Fold CV
+SpinaleAllImportantVariables_5FOLDCV_5<- Spinale_both_training[sample(nrow(Spinale_both_training)),]
+
+#RANDOM FOREST
+randomForest_AllImportantVariables_5FoldCV_5 <- train(response~Stretch_standardized + ST2_standardized +
+                                                        EjectionFraction_standardized + TIFRII_standardized + 
+                                                        LVESV_standardized + CRP_standardized + BNP_standardized,
+                                                      SpinaleAllImportantVariables_5FOLDCV_5,
+                                                      method = "rf",
+                                                      trControl = ctrl_5_fold_CV,
+                                                      tuneLength = 21,
+                                                      ntrees = 1000,
+                                                      metric = "Accuracy")
+
+randomForest_allImportantVariables_results_5FoldCV_5 <- as.data.frame(randomForest_AllImportantVariables_5FoldCV_5$results)
+
+randomForest_allImportantVariables_maxAccuracy_5FoldCV_5 <- randomForest_allImportantVariables_results_5FoldCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+randomForest_allImportantVariables_maxAccuracies_5FoldCV <- rbind(randomForest_allImportantVariables_maxAccuracies_5FoldCV,
+                                                                  randomForest_allImportantVariables_maxAccuracy_5FoldCV_5)
+
+#LOGISTIC REGRESSION
+logisticRegression_allImportantVariables_5FoldCV_5 <- train(response~Stretch_standardized + ST2_standardized +
+                                                              EjectionFraction_standardized + TIFRII_standardized + 
+                                                              LVESV_standardized + CRP_standardized + BNP_standardized,
+                                                            SpinaleAllImportantVariables_5FOLDCV_5,
+                                                            family = "binomial",
+                                                            method = "glm",
+                                                            trControl = ctrl_5_fold_CV,
+                                                            metric = "accuracy")
+
+logisticRegression_allImportantVariables_results_5FoldCV_5 <- as.data.frame(logisticRegression_allImportantVariables_5FoldCV_5$results)
+
+logisticRegression_allImportantVariables_maxAccuracies_5FoldCV <- rbind(logisticRegression_allImportantVariables_maxAccuracies_5FoldCV,
+                                                                        logisticRegression_allImportantVariables_results_5FoldCV_5)
+
+#K-NEAREST NEIGHBORS
+KNN_allImportantVariables_5FOLDCV_5 <- train(response~Stretch_standardized + ST2_standardized +
+                                               EjectionFraction_standardized + TIFRII_standardized + 
+                                               LVESV_standardized + CRP_standardized + BNP_standardized,
+                                             SpinaleAllImportantVariables_5FOLDCV_5,
+                                             method = "knn",
+                                             trControl = ctrl_5_fold_CV,
+                                             tuneLength = 20,
+                                             metric = "Accuracy")
+
+KNN_allImportantVariables_results_5FoldCV_5 <- as.data.frame(KNN_allImportantVariables_5FOLDCV_5$results)
+
+KNN_allImportantVariables_maxAccuracy_5FoldCV_5 <- KNN_allImportantVariables_results_5FoldCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+KNN_allImportantVariables_maxAccuracies_5FoldCV <- rbind(KNN_allImportantVariables_maxAccuracies_5FoldCV,
+                                       KNN_allImportantVariables_maxAccuracy_5FoldCV_5)
+
+#LINEAR SVM
+LinearSVM_allImportantVariables_5FOLDCV_5 <- train(response~Stretch_standardized + ST2_standardized +
+                                                     EjectionFraction_standardized + TIFRII_standardized + 
+                                                     LVESV_standardized + CRP_standardized + BNP_standardized,
+                                                   SpinaleAllImportantVariables_5FOLDCV_5,
+                                                   method = "svmLinear",
+                                                   trControl = ctrl_5_fold_CV,
+                                                   tuneGrid = grid,
+                                                   metric = "Accuracy")
+
+LinearSVM_allImportantVariables_results_5FoldCV_5 <- as.data.frame(LinearSVM_allImportantVariables_5FOLDCV_5$results)
+
+LinearSVM_allImportantVariables_maxAccuracy_5FoldCV_5 <- LinearSVM_allImportantVariables_results_5FoldCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+LinearSVM_allImportantVariables_maxAccuracies_5FoldCV <- rbind(LinearSVM_allImportantVariables_maxAccuracies_5FoldCV, 
+                                                               LinearSVM_allImportantVariables_maxAccuracy_5FoldCV_5)
+
+#RADIAL SVM
+RadialSVM_allImportantVariables_5FoldCV_5 <- train(response~Stretch_standardized + ST2_standardized +
+                                                     EjectionFraction_standardized + TIFRII_standardized + 
+                                                     LVESV_standardized + CRP_standardized + BNP_standardized,
+                                                   SpinaleAllImportantVariables_5FOLDCV_5,
+                                                   method = "svmRadial",
+                                                   trControl = ctrl_5_fold_CV,
+                                                   tuneGrid = grid_radial,
+                                                   metric = "Accuracy")
+
+RadialSVM_allImportantVariables_results_5FoldCV_5 <- as.data.frame(RadialSVM_allImportantVariables_5FoldCV_5$results)
+
+RadialSVM_allImportantVariables_maxAccuracy_5FoldCV_5 <- RadialSVM_allImportantVariables_results_5FoldCV_5 %>%
+  filter(Accuracy == max(Accuracy))
+
+RadialSVM_allImportantVariables_maxAccuracies_5FoldCV <- rbind(RadialSVM_allImportantVariables_maxAccuracies_5FoldCV, 
+                                                               RadialSVM_allImportantVariables_maxAccuracy_5FoldCV_5)
